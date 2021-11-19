@@ -1,1 +1,2 @@
 print("nader")
+print ("weam")
