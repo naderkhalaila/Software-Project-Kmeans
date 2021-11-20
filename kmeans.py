@@ -1,5 +1,4 @@
 def dist(point1, point2):
-    
     sum=0
     d = len(point1)
     for i in range(d):
@@ -30,7 +29,7 @@ def update(centroids_list ,DataPoints, indexingList):
         old_avg = centroids_list[i]
         centroids_list[i]= Avg(indexingList[i] , DataPoints)
         distance = dist (centroids_list[i] , old_avg)
-        if (distance>0.001):
+        if (distance > 0.001):
             boolean = False
     
     return boolean
@@ -66,13 +65,7 @@ def kmeans (k ,max_iter = 200, inputfile=None , outputfile=None):
             
     for i in range(k):
         centroids_list.append(DataPoints[i])
-    
-    
-    ###
-    for i in range(k):
-        DataPoints.pop(0)
-    
-    ###
+
     for iter in range(max_iter):
         
         indexingList = []
@@ -82,12 +75,17 @@ def kmeans (k ,max_iter = 200, inputfile=None , outputfile=None):
         clustering(centroids_list ,DataPoints, indexingList )
         bol = update(centroids_list ,DataPoints, indexingList )
         
-        if (bol == False):
-            break
+        if (bol == True):
+            break 
+        
+    for i in range(len(centroids_list)):
+        for j in range(len(centroids_list[0])):
+            centroids_list[i][j] = round(centroids_list[i][j] , 4)
+            
     return (centroids_list)
 
 
-lst = kmeans(7 , 100 , r"C:\Users\weamm\Downloads\input_1.txt" , r"C:\Users\weamm\Downloads\out.txt")
+lst = kmeans(7 , 100 , r"C:\Users\weamm\Downloads\input_2.txt" , r"C:\Users\weamm\Downloads\out.txt")
 print(lst)
 """
 -4.3095,9.0182,5.3354
