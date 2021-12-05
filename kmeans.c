@@ -49,7 +49,59 @@ int mindist(int k ,int dimension, double centroids_list[][dimension], double poi
     }
     return index;
 }
-void clustering(int dimension,double centroids_list[][dimension], double DataPoints[][dimension], double indexingList[])
+
+void Init (int k , int dimension , double count_array[] , double sumarray[][dimension]) {
+    int i, j;
+    for (i = 0; i < k; i++) {
+        for (j = 0; j < dimension; j++) {
+            sumarray[i][j] = 0;
+        }
+    }
+
+    for (i = 0; i < k; i++) {
+        count_array[i] = 0;
+    }
+}
+
+void clustering(int k , int rows ,int dimension ,double count_array[] ,
+                double sumarray[][dimension] ,double DataPoints[][dimension] ,double centroids_list[][dimension]){
+    int i;
+    int j;
+    int index;
+    for(i=0 ; i<rows; i++){
+        index = mindist(k ,dimension, centroids_list ,DataPoints[i]);
+        count_array[index]++;
+        for (j=0; j<dimension ; j++){
+            sumarray[index][j] += DataPoints[i][j];
+        }
+    }
+
+    for(i=0; i<rows ; i++){
+        for (j=0; j<dimension ; j++) {
+            sumarray[i][j] = sumarray[i][j]/count_array[i];
+        }
+    }
+}
+
+int calculate_delta(int k, int dimension,double centroids_list[][dimension] , double sumarray[][dimension] ){
+    int distance ;
+    int  i, j;
+    int bol=1;
+    for (i=0; i<k ; i++){
+        distance = dist(centroids_list[i], sumarray[i] , dimension);
+        if (distance > 0.001){
+            bol = 0;
+            break;
+        }
+    }
+
+    for(i=0 ; i<k ; i++){
+        for (j=0 ; j< dimension ; j++){
+            centroids_list[i][j] = sumarray[i][j];
+        }
+    }
+}
+
 
 void kmeans(int k, int max_iter, char filename[]){
     int dimension=0;
@@ -61,6 +113,8 @@ void kmeans(int k, int max_iter, char filename[]){
     double **centroids_list;
     double **sumarray;
     double **DataPoints;
+    double delta;
+    int iter;
 
     Sizefile(filename,&dimension,&rows);
     DataPoints=malloc(sizeof(double*)*rows);
@@ -104,24 +158,32 @@ void kmeans(int k, int max_iter, char filename[]){
     for(i=0 ; i<k ; i++){
         centroids_list[i] = (double*)malloc((dimension)* sizeof(double));
     }
+
     for(i=0 ; i<k ; i++){
         for(j=0 ; j<dimension ; j++){
             centroids_list[i][j] = DataPoints[i][j];
         }
     }
 
-    //int indexingList[k][rows]
-
     sumarray=malloc(sizeof(double*)*k);
     for(i=0 ; i<k ; i++){
         sumarray[i] = (double*)malloc((dimension)* sizeof(double));
     }
 
-    for(i=0 ; i<k ; i++){
-        for(j=0 ; j<dimension ; j++){
-            sumarray[i][j] = 0;
+    int *count_array;
+    count_array = (int*)malloc(sizeof (int)* k);
+
+    iter = 0;
+    while (delta < 0.0001 && iter < max_iter){
+        iter +=1;
+        Init(k, dimension, count_array , sumarray);
+        clustering(k, rows ,dimension, count_array , sumarray , DataPoints , centroids_list);
+        delta = calculate_delta(k, dimension, centroids_list , sumarray);
+        if (delta == 1){
+            break;
         }
     }
+
 
     for(i=0 ; i<k ; i++){
         for(j=0 ; j<dimension ; j++){
@@ -130,86 +192,11 @@ void kmeans(int k, int max_iter, char filename[]){
         }
         printf("\n");
     }
-
-
-
-
 }
 
-
-
+/*************************/
 int main() {
 
-    char filename[] = "C:\\Users\\nadsa\\Documents\\input_1.txt";
-    kmeans(3,200,filename);
-
-
-
+    char filename[] = "C:\\Users\\weamm\\Downloads\\input_1.txt";
+    kmeans(3, 200, filename);
 }
-
-
-/*
-    // FILE *in_file = fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "r");
-    FILE *f;
-    char c;
-    f=fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "rt");
-
-    int cnt1 = 0;
-    int cnt2 = 0;
-    while((c=fgetc(f))!=EOF){
-        if(c==','){
-            cnt1++;
-        }
-        if(c=='\n'){
-            cnt2++;
-        }
-        //printf("%c",c);
-    }
-    fclose(f);
-    printf("%d, %d",cnt1,cnt2);
-    double *arr[cnt2];
-    for(int i=0 ; i<cnt2 ; i++){
-        arr[i] = (double*)malloc((cnt1/cnt2 +1)* sizeof(double));
-    }
-    FILE *file;
-    char C;
-    file=fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "rt");
-    for(int i=0 ; i<cnt2 ; i++){
-        for(int j=0 ; j<cnt1/cnt2 +1 ; j++){
-            double num = 1;
-            int negative = 0;
-            while((C=fgetc(file))!='.' && C!=EOF){
-                if(C=='-'){
-                    negative = 1;
-                }
-                else{
-                    num = num * ((double)C - 48);
-                }
-
-            }
-            double fr = 0;
-            int p = 1;
-            while((C=fgetc(file))!=EOF && C!=',' && C!='\n'){
-                fr = fr + ((double)C - 48) * pow(10 , -1*p);
-                p++;
-            }
-            num = num + fr;
-            if(negative == 1){
-                num = -1*num;
-            }
-            arr[i][j] = num;
-        }
-    }
-    fclose(file);
-
-
-
-    for(int i=0 ; i<cnt2 ; i++) {
-        for (int j = 0; j < cnt1/cnt2 + 1; j++) {
-            printf("%f", arr[i][j]);
-            printf(",");
-        }
-        printf("\n");
-    }
-    return 0;
-      */
