@@ -27,8 +27,9 @@ void Sizefile(char filename[],int *dimension ,int *rows){
 }
 
 double dist(double point1[],double point2[],int dimension){
+    int i;
     double sum = 0;
-    for(int i=0 ; i<dimension ; i++){
+    for(i=0 ; i<dimension ; i++){
         sum += pow((point1[i] - point2[i]),2);
     }
     sum = pow(sum,0.5);
@@ -38,7 +39,8 @@ double dist(double point1[],double point2[],int dimension){
 int mindist(int k ,int dimension, double centroids_list[][dimension], double point[]){
     double min = dist(centroids_list[0] , point,dimension);
     int index = 0;
-    for (int j =1; j<k; j++){
+    int j;
+    for (j=1 ; j<k ; j++){
         double distance = dist(centroids_list[j] , point, dimension);
         if( distance < min){
             min =distance;
@@ -52,18 +54,26 @@ void clustering(int dimension,double centroids_list[][dimension], double DataPoi
 void kmeans(int k, int max_iter, char filename[]){
     int dimension=0;
     int rows=0;
+    int negative;
+    int p=1;
+    int i,j;
+    double num,fr;
+    double **centroids_list;
+    double **sumarray;
+    double **DataPoints;
+
     Sizefile(filename,&dimension,&rows);
-    double *DataPoints[rows];
-    for(int i=0 ; i<rows ; i++){
+    DataPoints=malloc(sizeof(double*)*rows);
+    for(i=0 ; i<rows ; i++){
         DataPoints[i] = (double*)malloc((dimension)* sizeof(double));
     }
     FILE *file;
     char C;
     file=fopen(filename, "rt");
-    for(int i=0 ; i<rows ; i++){
-        for(int j=0 ; j<dimension ; j++){
-            double num = 1;
-            int negative = 0;
+    for(i=0 ; i<rows ; i++){
+        for(j=0 ; j<dimension ; j++){
+            num = 1;
+            negative = 0;
             while((C=fgetc(file))!='.' && C!=EOF){
                 if(C=='-'){
                     negative = 1;
@@ -73,8 +83,8 @@ void kmeans(int k, int max_iter, char filename[]){
                 }
 
             }
-            double fr = 0;
-            int p = 1;
+            fr = 0;
+            p = 1;
             while((C=fgetc(file))!=EOF && C!=',' && C!='\n'){
                 fr = fr + ((double)C - 48) * pow(10 , -1*p);
                 p++;
@@ -89,38 +99,39 @@ void kmeans(int k, int max_iter, char filename[]){
     fclose(file);
 
 
-    double *centroids_list[k];
-    for(int i=0 ; i<k ; i++){
+
+    centroids_list=malloc(sizeof(double*)*k);
+    for(i=0 ; i<k ; i++){
         centroids_list[i] = (double*)malloc((dimension)* sizeof(double));
     }
-    for(int i=0 ; i<k ; i++){
-        for(int j=0 ; j<dimension ; j++){
+    for(i=0 ; i<k ; i++){
+        for(j=0 ; j<dimension ; j++){
             centroids_list[i][j] = DataPoints[i][j];
         }
     }
+
     //int indexingList[k][rows]
-    int size = 2;
-    double **sumarrays;
-    sumarrays=malloc(sizeof(int*)*k);
-    for(int i=0 ; i<k ; i++){
-        sumarrays[i] = (int*)malloc((dimension)* sizeof(int));
+
+    sumarray=malloc(sizeof(double*)*k);
+    for(i=0 ; i<k ; i++){
+        sumarray[i] = (double*)malloc((dimension)* sizeof(double));
     }
 
-    for(int i=0 ; i<k ; i++){
-        for(int j=0 ; j<dimension ; j++){
+    for(i=0 ; i<k ; i++){
+        for(j=0 ; j<dimension ; j++){
+            sumarray[i][j] = 0;
+        }
+    }
+
+    for(i=0 ; i<k ; i++){
+        for(j=0 ; j<dimension ; j++){
             printf("%f",centroids_list[i][j]);
             printf(",");
         }
         printf("\n");
     }
 
-    int** a = malloc(2*sizeof (int*));
-    int* b = malloc(sizeof(int) * 2);
-    b[0]=1;b[1]=2;
-    int* c = malloc(sizeof(int) * 3);
-    c[0]=1;c[1]=2;c[2]=3;
-    a[0]=b;
-    a[1]=c;
+
 
 
 }
