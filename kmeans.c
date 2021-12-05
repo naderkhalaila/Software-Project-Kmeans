@@ -184,3 +184,18 @@ int main() {
 
     return 0;
 }
+
+-----------------------------------------------------------------------------------
+    
+int mindist(double centroids_list[][dimension], point[]){
+    double min = dist(centroids_list[0] , point[]) ;
+    int index = 0;
+    for (int j =1; j<k; j++){
+        double distance = dist(centroids_list[j] , point[]);
+        if( distance < min){
+            min =distance;
+            index = j;
+        }
+    }
+    return index;
+}
