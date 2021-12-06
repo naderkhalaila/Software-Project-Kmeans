@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <math.h>
 
+
 void Sizefile(char *filename, int *dimension, int *rows) {
 
     FILE *f;
@@ -27,20 +28,23 @@ void Sizefile(char *filename, int *dimension, int *rows) {
 }
 
 double dist(double *point1, double *point2, int dimension) {
+
     int i;
     double sum = 0;
     for (i = 0; i < dimension; i++) {
-        sum += pow((point1[i] - point2[i]), 2);
+        sum += pow((point1[i]-point2[i]), 2);
     }
+
     sum = pow(sum, 0.5);
     return sum;
 }
 
 int mindist(int k, int dimension, double **centroids_list, double *point) {
+
     double min = dist(centroids_list[0], point, dimension);
     int index = 0;
     int j;
-    for (j = 0; j < k; j++) {
+    for (j = 1; j < k; j++) {
         double distance = dist(centroids_list[j], point, dimension);
         if (distance < min) {
             min = distance;
@@ -53,10 +57,14 @@ int mindist(int k, int dimension, double **centroids_list, double *point) {
 void Init(int k, int dimension, int *count_array, double **sum_array) {
     int i, j;
     for (i = 0; i < k; i++) {
-        count_array[i] = 0;
         for (j = 0; j < dimension; j++) {
             sum_array[i][j] = 0;
+
         }
+    }
+
+    for (i = 0; i < k; i++) {
+        count_array[i] = 0;
     }
 }
 
@@ -86,7 +94,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
     int bol = 1;
     for (i = 0; i < k; i++) {
         distance = dist(centroids_list[i], sum_array[i], dimension);
-        if (distance >= 0.001) {
+        if (distance > 0.001) {
             bol = 0;
             break;
         }
@@ -94,9 +102,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
 
     for (i = 0; i < k; i++) {
         for (j = 0; j < dimension; j++) {
-
             centroids_list[i][j] = sum_array[i][j];
-            
         }
     }
     return bol;
@@ -115,6 +121,7 @@ void kmeans(int k, int max_iter, char filename[]) {
     double **DataPoints;
     int delta = 0;
     int iter;
+    double tmp;
 
     Sizefile(filename, &dimension, &rows);
     DataPoints = malloc(sizeof(double *) * rows);
@@ -127,12 +134,16 @@ void kmeans(int k, int max_iter, char filename[]) {
     for (i = 0; i < rows; i++) {
         for (j = 0; j < dimension; j++) {
             num = 1;
+            tmp = 0;
             negative = 0;
             while ((C = fgetc(file)) != '.' && C != EOF) {
                 if (C == '-') {
                     negative = 1;
                 } else {
+                    tmp = tmp*10;
                     num = num * ((double) C - 48);
+                    tmp += num;
+                    num = tmp;
                 }
 
             }
@@ -174,22 +185,15 @@ void kmeans(int k, int max_iter, char filename[]) {
     int *count_array;
     count_array = (int *) malloc(sizeof(int) * k);
 
-
     iter = 0;
     while(delta==0 && iter < max_iter) {
-
-        iter++;
         Init(k, dimension, count_array, sum_array);
         clustering(k, rows, dimension, count_array, sum_array, DataPoints, centroids_list);
         delta = calculate_delta(k, dimension, centroids_list, sum_array);
-
-
+        iter++;
     }
 
-
-    //printf("3\n");
-
-
+    printf("\n");
     for (i = 0; i < k; i++) {
         for (j = 0; j < dimension; j++) {
             printf("%f", centroids_list[i][j]);
@@ -197,81 +201,13 @@ void kmeans(int k, int max_iter, char filename[]) {
         }
         printf("\n");
     }
-    //printf("4\n");
-
 }
 
 /*************************/
 int main() {
 
-    char filename[] = "C:\\Users\\nadsa\\Documents\\input_1.txt";
-    kmeans(3, 600, filename);
+    char filename[] = "C:\\Users\\weamm\\Downloads\\input_2.txt";
+    kmeans(7, 500, filename);
+
 }
 
-
-
-/*
-    // FILE *in_file = fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "r");
-    FILE *f;
-    char c;
-    f=fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "rt");
-
-    int cnt1 = 0;
-    int cnt2 = 0;
-    while((c=fgetc(f))!=EOF){
-        if(c==','){
-            cnt1++;
-        }
-        if(c=='\n'){
-            cnt2++;
-        }
-        //printf("%c",c);
-    }
-    fclose(f);
-    printf("%d, %d",cnt1,cnt2);
-    double *arr[cnt2];
-    for(int i=0 ; i<cnt2 ; i++){
-        arr[i] = (double*)malloc((cnt1/cnt2 +1)* sizeof(double));
-    }
-    FILE *file;
-    char C;
-    file=fopen("C:\\Users\\nadsa\\Documents\\input_3.txt", "rt");
-    for(int i=0 ; i<cnt2 ; i++){
-        for(int j=0 ; j<cnt1/cnt2 +1 ; j++){
-            double num = 1;
-            int negative = 0;
-            while((C=fgetc(file))!='.' && C!=EOF){
-                if(C=='-'){
-                    negative = 1;
-                }
-                else{
-                    num = num * ((double)C - 48);
-                }
-
-            }
-            double fr = 0;
-            int p = 1;
-            while((C=fgetc(file))!=EOF && C!=',' && C!='\n'){
-                fr = fr + ((double)C - 48) * pow(10 , -1*p);
-                p++;
-            }
-            num = num + fr;
-            if(negative == 1){
-                num = -1*num;
-            }
-            arr[i][j] = num;
-        }
-    }
-    fclose(file);
-
-
-
-    for(int i=0 ; i<cnt2 ; i++) {
-        for (int j = 0; j < cnt1/cnt2 + 1; j++) {
-            printf("%f", arr[i][j]);
-            printf(",");
-        }
-        printf("\n");
-    }
-    return 0;
-      */
