@@ -57,14 +57,10 @@ int mindist(int k, int dimension, double **centroids_list, double *point) {
 void Init(int k, int dimension, int *count_array, double **sum_array) {
     int i, j;
     for (i = 0; i < k; i++) {
+        count_array[i] = 0;
         for (j = 0; j < dimension; j++) {
             sum_array[i][j] = 0;
-
         }
-    }
-
-    for (i = 0; i < k; i++) {
-        count_array[i] = 0;
     }
 }
 
@@ -109,7 +105,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
 }
 
 
-void kmeans(int k, int max_iter, char filename[]) {
+void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     int dimension = 0;
     int rows = 0;
     int negative;
@@ -119,6 +115,8 @@ void kmeans(int k, int max_iter, char filename[]) {
     double **centroids_list;
     double **sum_array;
     double **DataPoints;
+    int *count_array;
+    FILE *output;
     int delta = 0;
     int iter;
     double tmp;
@@ -182,7 +180,7 @@ void kmeans(int k, int max_iter, char filename[]) {
     //printf("2\n");
 
 
-    int *count_array;
+
     count_array = (int *) malloc(sizeof(int) * k);
 
     iter = 0;
@@ -192,22 +190,34 @@ void kmeans(int k, int max_iter, char filename[]) {
         delta = calculate_delta(k, dimension, centroids_list, sum_array);
         iter++;
     }
+    output = fopen(output_filename,"w");
 
     printf("\n");
     for (i = 0; i < k; i++) {
         for (j = 0; j < dimension; j++) {
-            printf("%f", centroids_list[i][j]);
-            printf(",");
+            if(j!= (dimension-1)){
+                fprintf(output,"%.4f,",centroids_list[i][j]);
+            }
+            else{
+                fprintf(output,"%.4f",centroids_list[i][j]);
+            }
         }
-        printf("\n");
+        fprintf(output,"\n");
     }
+    fclose(output);
+    free(centroids_list);
+    free(DataPoints);
+    free(sum_array);
+    free(count_array);
+
 }
 
 /*************************/
 int main() {
 
-    char filename[] = "C:\\Users\\weamm\\Downloads\\input_2.txt";
-    kmeans(7, 500, filename);
+    char filename[] = "C:\\Users\\nadsa\\Documents\\SW-project\\hw1\\tests\\input_20.txt";
+    char output[] = "C:\\Users\\nadsa\\Documents\\SW-project\\result_1.txt";
+    kmeans(7, 200, filename,output);
 
 }
 
