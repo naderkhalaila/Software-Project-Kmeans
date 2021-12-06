@@ -131,20 +131,26 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
         for (j = 0; j < dimension; j++) {
-            num = 1;
+
             tmp = 0;
             negative = 0;
             while ((C = fgetc(file)) != '.' && C != EOF) {
+                num = 1;
                 if (C == '-') {
                     negative = 1;
                 } else {
                     tmp = tmp*10;
-                    num = num * ((double) C - 48);
+                   // printf("%f\n",tmp);
+                    num = num * ((double)C - 48);
+                    //printf("%f\n",num);
                     tmp += num;
+                   // printf("%f\n",tmp);
                     num = tmp;
+                    //printf("%f\n",num);
                 }
 
             }
+
             fr = 0;
             p = 1;
             while ((C = fgetc(file)) != EOF && C != ',' && C != '\n') {
@@ -159,7 +165,15 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
         }
     }
     fclose(file);
-    //printf("1\n");
+    /*
+    for (i = 0; i < k; i++) {
+        for (j = 0; j < dimension; j++) {
+            printf("%f", DataPoints[i][j]);
+            printf(",");
+        }
+        printf("\n");
+    }*/
+
 
 
     centroids_list = malloc(sizeof(double *) * k);
@@ -215,7 +229,7 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
 /*************************/
 int main() {
 
-    char filename[] = "C:\\Users\\nadsa\\Documents\\SW-project\\hw1\\tests\\input_20.txt";
+    char filename[] = "C:\\Users\\nadsa\\Documents\\SW-project\\hw1\\tests\\input_11.txt";
     char output[] = "C:\\Users\\nadsa\\Documents\\SW-project\\result_1.txt";
     kmeans(7, 200, filename,output);
 
