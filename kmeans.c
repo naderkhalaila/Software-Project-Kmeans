@@ -40,7 +40,7 @@ int mindist(int k, int dimension, double **centroids_list, double *point) {
     double min = dist(centroids_list[0], point, dimension);
     int index = 0;
     int j;
-    for (j = 1; j < k; j++) {
+    for (j = 0; j < k; j++) {
         double distance = dist(centroids_list[j], point, dimension);
         if (distance < min) {
             min = distance;
@@ -53,14 +53,10 @@ int mindist(int k, int dimension, double **centroids_list, double *point) {
 void Init(int k, int dimension, int *count_array, double **sum_array) {
     int i, j;
     for (i = 0; i < k; i++) {
+        count_array[i] = 0;
         for (j = 0; j < dimension; j++) {
             sum_array[i][j] = 0;
-
         }
-    }
-
-    for (i = 0; i < k; i++) {
-        count_array[i] = 0;
     }
 }
 
@@ -80,7 +76,6 @@ void clustering(int k, int rows, int dimension, int *count_array,
     for (i = 0; i < k; i++) {
         for (j = 0; j < dimension; j++) {
             sum_array[i][j] = sum_array[i][j] / count_array[i];
-            //printf( "%d , %d ,%f\n" , i, j,sum_array[i][j]);
         }
     }
 }
@@ -91,7 +86,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
     int bol = 1;
     for (i = 0; i < k; i++) {
         distance = dist(centroids_list[i], sum_array[i], dimension);
-        if (distance > 0.001) {
+        if (distance >= 0.001) {
             bol = 0;
             break;
         }
@@ -99,7 +94,9 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
 
     for (i = 0; i < k; i++) {
         for (j = 0; j < dimension; j++) {
+
             centroids_list[i][j] = sum_array[i][j];
+            
         }
     }
     return bol;
@@ -177,6 +174,7 @@ void kmeans(int k, int max_iter, char filename[]) {
     int *count_array;
     count_array = (int *) malloc(sizeof(int) * k);
 
+
     iter = 0;
     while(delta==0 && iter < max_iter) {
 
@@ -187,6 +185,8 @@ void kmeans(int k, int max_iter, char filename[]) {
 
 
     }
+
+
     //printf("3\n");
 
 
