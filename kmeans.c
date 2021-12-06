@@ -1,6 +1,31 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <math.h>
+#include <stdlib.h>
+
+int valid(int argc, char *argv[]){
+    int check_k;
+    int check_Max_iter;
+
+    check_k = atoi(argv[1]);
+    check_Max_iter= atoi(argv[2]);
+
+    if(argc<4) {
+        return 0;
+    }else if(argc == 4) {
+        if (check_k <= 1) {
+            return 0;
+        }
+
+    }else if(argc==5){
+        if(check_k <=0 || check_Max_iter <= 0){
+            return 0 ;
+        }
+    }
+
+    return 1;
+
+}
 
 
 void Sizefile(char *filename, int *dimension, int *rows) {
@@ -131,7 +156,6 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
         for (j = 0; j < dimension; j++) {
-
             tmp = 0;
             negative = 0;
             while ((C = fgetc(file)) != '.' && C != EOF) {
@@ -140,17 +164,12 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
                     negative = 1;
                 } else {
                     tmp = tmp*10;
-                   // printf("%f\n",tmp);
-                    num = num * ((double)C - 48);
-                    //printf("%f\n",num);
+                    num = num * ((double) C - 48);
                     tmp += num;
-                   // printf("%f\n",tmp);
                     num = tmp;
-                    //printf("%f\n",num);
                 }
 
             }
-
             fr = 0;
             p = 1;
             while ((C = fgetc(file)) != EOF && C != ',' && C != '\n') {
@@ -165,16 +184,6 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
         }
     }
     fclose(file);
-    /*
-    for (i = 0; i < k; i++) {
-        for (j = 0; j < dimension; j++) {
-            printf("%f", DataPoints[i][j]);
-            printf(",");
-        }
-        printf("\n");
-    }*/
-
-
 
     centroids_list = malloc(sizeof(double *) * k);
     for (i = 0; i < k; i++) {
@@ -191,9 +200,6 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     for (i = 0; i<k; i++) {
         sum_array[i] = (double *) malloc((dimension) * sizeof(double));
     }
-    //printf("2\n");
-
-
 
     count_array = (int *) malloc(sizeof(int) * k);
 
@@ -226,12 +232,21 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
 
 }
 
-/*************************/
-int main() {
+int main(int argc, char** argv) {
+    int Valid;
+    Valid = valid(argc,argv);
 
-    char filename[] = "C:\\Users\\nadsa\\Documents\\SW-project\\hw1\\tests\\input_11.txt";
-    char output[] = "C:\\Users\\nadsa\\Documents\\SW-project\\result_1.txt";
-    kmeans(7, 200, filename,output);
-
+    if(!Valid){
+        printf("Invalid Input!");
+        return 1;
+    }
+    /*All arguments provided*/
+    if (argc ==5){
+        kmeans(atoi(argv[1]),atoi(argv[2]) , argv[3], argv[4]);
+    }
+    /*Argument "Max_iter missed*/
+    if (argc==4){
+        kmeans(atoi(argv[1]),200 , argv[2], argv[3]);
+    }
+    return 0;
 }
-
