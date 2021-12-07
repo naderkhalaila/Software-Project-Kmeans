@@ -4,38 +4,31 @@
 #include <stdlib.h>
 
 int valid(int argc, char *argv[]){
-    int check_k;
-    int check_Max_iter;
-
-    check_k = atoi(argv[1]);
-    check_Max_iter= atoi(argv[2]);
-
-    if(argc<4) {
-        return 0;
-    }else if(argc == 4) {
-        if (check_k <= 1) {
+    char** ptr;
+    ptr=NULL;
+    if(argc<4) return 0;
+    else if(argc==4) {
+        if (strtod(argv[1],ptr) == 0) {
             return 0;
         }
-
-    }else if(argc==5){
-        if(check_k <=0 || check_Max_iter <= 0){
-            return 0 ;
-        }
     }
-
+    else if(argc==5){
+        if(strtod(argv[1],ptr)==0 || strtod(argv[2],ptr)==0) return 0;
+    }
+    free(ptr);
     return 1;
-
 }
 
 
 void Sizefile(char *filename, int *dimension, int *rows) {
-
+    int tmp_dimension;
+    int tmp_rows;
     FILE *f;
     char c;
     f = fopen(filename, "rt");
+    tmp_dimension=0;
+    tmp_rows=0;
 
-    int tmp_dimension = 0;
-    int tmp_rows = 0;
 
     while ((c = fgetc(f)) != EOF) {
         if (c == ',') {
@@ -130,7 +123,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
 }
 
 
-void kmeans(int k, int max_iter, char filename[], char *output_filename) {
+int kmeans(int k, int max_iter, char filename[], char *output_filename) {
     int dimension = 0;
     int rows = 0;
     int negative;
@@ -145,14 +138,16 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     int delta = 0;
     int iter;
     double tmp;
+    FILE *file;
+    char C;
 
     Sizefile(filename, &dimension, &rows);
     DataPoints = malloc(sizeof(double *) * rows);
     for (i = 0; i < rows; i++) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
-    FILE *file;
-    char C;
+
+
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
         for (j = 0; j < dimension; j++) {
@@ -184,6 +179,10 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
         }
     }
     fclose(file);
+    if(k>rows || k<1 || max_iter<1){
+        printf("Invalid Input!");
+        return 1;
+    }
 
     centroids_list = malloc(sizeof(double *) * k);
     for (i = 0; i < k; i++) {
@@ -212,23 +211,31 @@ void kmeans(int k, int max_iter, char filename[], char *output_filename) {
     }
     output = fopen(output_filename,"w");
 
-    printf("\n");
-    for (i = 0; i < k; i++) {
-        for (j = 0; j < dimension; j++) {
-            if(j!= (dimension-1)){
-                fprintf(output,"%.4f,",centroids_list[i][j]);
-            }
-            else{
-                fprintf(output,"%.4f",centroids_list[i][j]);
+
+    output = fopen(output_filename,"w");
+    for(i=0;i<k;i++){
+        for ( j = 0; j < dimension; j++) {
+            fprintf(output,"%.4f",centroids_list[i][j]);
+            if(j<dimension-1){
+                fprintf(output,",");
             }
         }
         fprintf(output,"\n");
     }
+
     fclose(output);
+    for(i=0 ; i<k ; i++){
+        free(centroids_list[i]);
+        free((sum_array[i]));
+    }
     free(centroids_list);
+    for(i=0 ; i<rows ; i++){
+        free(DataPoints[i]);
+    }
     free(DataPoints);
     free(sum_array);
     free(count_array);
+    return 0;
 
 }
 
