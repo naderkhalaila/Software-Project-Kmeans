@@ -48,9 +48,7 @@ def Avg(lst, DataPoints):
     return avg_point
 
 
-def kmeans(k, max_iter=200, inputfile=None, outputfile=None):
-    assert type(k) == int, "Invalid input."
-    assert type(max_iter) == int, "Invalid input."
+def kmeans(k, max_iter, inputfile, outputfile):
 
     centroids_list = []
     DataPoints = []
@@ -65,16 +63,21 @@ def kmeans(k, max_iter=200, inputfile=None, outputfile=None):
 
     for i in range(k):
         centroids_list.append(DataPoints[i])
+    if(k<=1 or k>= len(DataPoints)):
+        print("Invalid Input!")
+        sys.exit()
+
+    if(max_iter<1):
+        print("Invalid Input!")
+        sys.exit()
+
 
     for iter in range(max_iter):
-
         indexingList = []
         for i in range(k):
             indexingList.append([])
-
         clustering(centroids_list, DataPoints, indexingList)
         bol = update(centroids_list, DataPoints, indexingList)
-
         if (bol == True):
             break
 
@@ -83,17 +86,44 @@ def kmeans(k, max_iter=200, inputfile=None, outputfile=None):
             a = centroids_list[i][j]
             centroids_list[i][j] = "%.4f" %round(a, 4)
 
-    return (centroids_list)
 
 
-lst = kmeans(15, 100, r"C:\Users\nadsa\Documents\input_3.txt")
-f = open(r"C:\Users\nadsa\Documents\result_1.txt", "w")
-for l in lst:
-    for i in range(len(l)):
-        f.write(str(l[i]))
-        if(i != len(l)-1):
-            f.write(",")
-    f.write("\n")
+    ff = open(outputfile, 'w')
+    for i in range(len(centroids_list)):
+        ff.write(','.join([format(centroids_list[i][j]) for j in range(len(centroids_list[i]))]) + '\n')
+    ff.close()
+
+import sys
+args = sys.argv
+maxiter=0
+
+if len(args)==5:
+    if (args[1].isdigit() == False or args[2].isdigit() == False):
+        print("Invalid Input!")
+        sys.exit()
+
+    assert args[1].isdigit() , "Invalid input."
+    assert args[2].isdigit(), "Invalid input."
+    k = int(args[1])
+    maxiter=int(args[2])
+    inputfile =args[3]
+    outputfile =args[4]
+    kmeans(k, maxiter,inputfile,outputfile)
+if len(args)==4:
+    if(args[1].isdigit()==False):
+        print("Invalid Input!")
+        sys.exit()
+
+    k = int(args[1])
+    maxiter=200
+    inputfile = args[2]
+    outputfile = args[3]
+    kmeans(k, maxiter, inputfile, outputfile)
+
+
+
+#lst = kmeans(7, 200, r"C:\Users\nadsa\Documents\SW-project\hw1\tests\input_9.txt",r"C:\Users\nadsa\Documents\SW-project\result_1.txt")
+
 
 
 """
