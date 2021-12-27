@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-DataPoints = pd.read_csv(r'C:\Users\weamm\Downloads\input_1_db_1.txt')
+"""DataPoints = pd.read_csv(r'C:\Users\weamm\Downloads\input_1_db_1.txt')
 dimension = len(DataPoints.columns)
 DataPoints.columns = ["dim" + str(i) for i in range(1,dimension+1)]
 DataPoints["D"] = [0 for i in range(len(DataPoints))]
@@ -10,7 +10,7 @@ DataPoints["P"] = [0 for i in range(len(DataPoints))]
 point1=[]
 for i in range (1,dimension+1):
         point1.append(DataPoints["dim" + str(i)][2])
-print(point1)
+print(point1)"""
 
 def dist(point1, point2):
     sum = 0
@@ -33,7 +33,7 @@ def mindist(centroids_index, point2, DataPoints,dimension):
             min = distance
             index = i
 
-    return centroids_index[index]
+    return min
 
 def kmeansPlus(k,max_iter, epsilon , filename1, filename2):
     centroids = []
@@ -80,9 +80,18 @@ def init(k, filename1 , filename2 , centroids, centroids_index):
         centroids_index.append(muo)
     
         for j in range(len(DataPoints)):
-            point2=[]
+            point=[]
             for i in range (1,dimension+1):
-                point2.append(DataPoints["dim" + str(i)][j])
+                point.append(DataPoints["dim" + str(i)][j])
+            
+            D = mindist(centroids_index, point, DataPoints, dimension)
+            sum1 = sum1 - DataPoints["D"][j] + D
+            DataPoints["D"][j] = D
+            
+        for j in range(len(DataPoints)):
+            DataPoints["P"][j] = DataPoints["D"][j]/sum1
+
+
         
         
 
