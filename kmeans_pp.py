@@ -15,7 +15,7 @@ def dist(point1, point2):
 def mindist(centroids, point2, DataPoints, dimension, z):
     min = "inf"
 
-    for i in range(z):
+    for i in range(z+1):
         point1 = centroids[i]
         distance = dist(point1, point2)
         if (min == "inf" or distance < min):
@@ -45,11 +45,10 @@ def kmeansPlus(k, MAX_ITER, filename1, filename2):
     centroids = np.ndarray((k, dimension), float)
     centroids_index = np.ndarray(k, int)
 
-    init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows ,Data_indices )
+    init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows  )
     print(centroids_index)
     print(centroids)
-    for i in range(len(centroids_index)):
-        print(DataPoints[centroids_index[i]])
+
 
 def ReadData(k, filename1, filename2):
     DataPoints1 = pd.read_csv(filename1, header=None)
@@ -60,25 +59,21 @@ def ReadData(k, filename1, filename2):
     return DataPoints
 
 
-def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows, t):
+def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
     sum1 = 0
     D = np.zeros(rows)
     P = np.zeros(rows)
 
     np.random.seed(0)
     mew = np.random.choice(rows)
-    centroids_index[0] = t[mew]
+    centroids_index[0] = mew
     centroids[0] = DataPoints[mew]
 
     point1 = DataPoints[mew]
-
     for j in range(rows):
         point2 = DataPoints[j]
-
-        newD = dist(point1, point2)
-        oldD = D[j]
-        D[j] = newD
-        sum1 = sum1 - oldD + newD
+        D[j] = dist(point1, point2)
+        sum1 = sum1 + D[j]
 
     P = np.divide(D, sum1)
 
@@ -97,7 +92,6 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows, t
 
         P = np.divide(D, sum1)
         i+=1
-
 
 import sys
 args = sys.argv
