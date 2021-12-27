@@ -1,103 +1,6 @@
 import pandas as pd
 import numpy as np
-
-
-"""DataPoints = pd.read_csv(r'C:\Users\weamm\Downloads\input_1_db_1.txt')
-dimension = len(DataPoints.columns)
-DataPoints.columns = ["dim" + str(i) for i in range(1,dimension+1)]
-DataPoints["D"] = [0 for i in range(len(DataPoints))]
-DataPoints["P"] = [0 for i in range(len(DataPoints))]
-point1=[]
-for i in range (1,dimension+1):
-        point1.append(DataPoints["dim" + str(i)][2])
-print(point1)"""
-
-def dist(point1, point2):
-    sum = 0
-    d = len(point1)
-    for i in range(d):
-        sum += (point1[i] - point2[i]) ** 2
-    sum = sum ** 0.5
-    return sum
-
-def mindist(centroids_index, point2, DataPoints,dimension):
-    min = "inf"
-    index = 0
-
-    for i in range(len(centroids_index)):
-        point1 = []
-        for j in range(1, dimension+1):
-            point1.append(DataPoints["dim"+str(j)][centroids_index[i]])
-        distance = dist(point1, point2)
-        if (min == "inf" or distance < min):
-            min = distance
-            index = i
-
-    return min
-
-def kmeansPlus(k,max_iter, epsilon , filename1, filename2):
-    centroids = []
-    centroids_index=[]
-
-
-
-def init(k, filename1 , filename2 , centroids, centroids_index):
-
-    sum1 = 0
-    DataPoints = pd.read_csv(filename1)
-    dimension = len(DataPoints.column)
-    DataPoints.columns = ["dim" + str(i) for i in range(1,dimension+1)]
-    
-    DataPoints["D"] = [0 for i in range(len(DataPoints))]
-    DataPoints["P"] = [0 for i in range(len(DataPoints))]
-    
-    np.random.seed(0)
-    muo = np.random.choice(len(DataPoints), 1)
-    
-    centroids_index.append(muo)
-    
-    point1=[]
-    for i in range (1,dimension+1):
-        point1.append(DataPoints["dim" + str(i)][muo])
-    
-        
-    for j in range(len(DataPoints)):
-        point2=[]
-        for i in range (1,dimension+1):
-            point2.append(DataPoints["dim" + str(i)][j])
-            
-        newD = dist(point1 , point2)
-        oldD = DataPoints["D"][j]
-        DataPoints["D"][j] = newD
-        sum1 = sum1 - oldD  + newD
-        
-    for j in range(len(DataPoints)):
-        DataPoints["P"][j] = DataPoints["D"][j]/sum1
-        
-    i=1
-    while(i<k):
-        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())
-        centroids_index.append(muo)
-    
-        for j in range(len(DataPoints)):
-            point=[]
-            for i in range (1,dimension+1):
-                point.append(DataPoints["dim" + str(i)][j])
-            
-            D = mindist(centroids_index, point, DataPoints, dimension)
-            sum1 = sum1 - DataPoints["D"][j] + D
-            DataPoints["D"][j] = D
-            
-        for j in range(len(DataPoints)):
-            DataPoints["P"][j] = DataPoints["D"][j]/sum1
-
-
-        
-        -------------------------------------------
-        
-        
-        import pandas as pd
-import numpy as np
+import sys
 
 
 def dist(point1, point2):
@@ -108,90 +11,117 @@ def dist(point1, point2):
     sum = sum ** 0.5
     return sum
 
-def mindist(centroids_index, point2, DataPoints,dimension):
-    min = "inf"
-    index = 0
 
-    for i in range(len(centroids_index)):
-        point1 = []
-        for j in range(1, dimension+1):
-            point1.append(DataPoints["dim"+str(j)][centroids_index[i]])
+def mindist(centroids, point2, DataPoints,dimension , z):
+    min = "inf"
+
+    for i in range(z):
+        point1 = centroids[i]
         distance = dist(point1, point2)
         if (min == "inf" or distance < min):
             min = distance
-            index = i
-
+            
     return min
 
-def kmeansPlus(k,max_iter, epsilon , filename1, filename2):
-    centroids = []
-    centroids_index=[]
 
 
+def kmeansPlus(k, MAX_ITER , filename1, filename2):
+    DataPoints = ReadData(filename1, filename2)
+    
+    Data_indices = DataPoints.iloc[:, :1]
+    Data_indices = Data_indices.to_numpy()
+    Data_indices = np.array(Data_indices)
+    
+    DataPoints = DataPoints.iloc[:, 1:] 
+    DataPoints = DataPoints.to_numpy()
+    DataPoints = np.array(DataPoints)
+    
+    rows = DataPoints.shape[0]
+    dimension = DataPoints.shape[1] 
+    
+    if(k >= rows):
+        print("Invalid Input!")
+        return -1
+    
+    centroids = np.array((k, dimension) , float)
+    centroids_index=np.array(k, int)
+    init_Centroids(DataPoints , centroids , centroids_index , k , dimension , rows)
 
-def init(k, filename1 , filename2 , centroids, centroids_index):
+
+def ReadData(k, filename1 , filename2):
      
-    names = ["index"]
-    sum1 = 0
     DataPoints1 = pd.read_csv(filename1)
-    dimension1 = len(DataPoints1.columns)
-    DataPoints1.columns = names + ["dim" + str(i) for i in range(1,dimension1+1)]
-    
     DataPoints2 = pd.read_csv(filename2)
-    dimension2 = len(DataPoints2.columns)
-    DataPoints2.columns = names + ["dim" + str(i) for i in range(dimension1 + 1,dimension1 +dimension2)]
-
-    DataPoints = pd.merge(DataPoints1 , DataPoints2 , on="index")
-    dimension = dimension1 + dimension2
+    DataPoints = pd.merge(DataPoints1 , DataPoints2 , on=0)
+    DataPoints = DataPoints.sort_values(by=[0])
     
-    DataPoints["D"] = [0 for i in range(len(DataPoints))]
-    DataPoints["P"] = [0 for i in range(len(DataPoints))]
+    return DataPoints 
+
+
+def init_Centroids(DataPoints ,centroids , centroids_index, k , dimension  , rows):
+
+    sum1 = 0
+    D = np.zeros(rows)
+    P = np.zeros(rows)
     
     np.random.seed(0)
-    muo = np.random.choice(len(DataPoints), 1)
+    mew = np.random.choice(len(DataPoints), 1)
+    centroids_index[0]= mew
+    centroids[0] = DataPoints[mew]
     
-    centroids_index.append(muo)
-    
-    point1=[]
-    for i in range (1,dimension+1):
-        point1.append(DataPoints["dim" + str(i)][muo])
-    
+    point1=DataPoints[mew]
         
     for j in range(len(DataPoints)):
-        point2=[]
-        for i in range (1,dimension+1):
-            point2.append(DataPoints["dim" + str(i)][j])
+        point2 = DataPoints[j]
             
         newD = dist(point1 , point2)
-        oldD = DataPoints["D"][j]
-        DataPoints["D"][j] = newD
+        oldD = D[j]
+        D[j] = newD
         sum1 = sum1 - oldD  + newD
         
-    for j in range(len(DataPoints)):
-        DataPoints["P"][j] = DataPoints["D"][j]/sum1
-        
+    P = np.divide(D, sum1)
+    
     i=1
     while(i<k):
-        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())
-        centroids_index.append(muo)
+        mew = np.random.choice(len(DataPoints) , 1, P)
+        centroids_index[i] = mew
+        centroids[i] = DataPoints[mew]
+     
+        for j in range(len(DataPoints)):
+            point = DataPoints[j]
+            D = mindist(centroids, point, DataPoints, dimension , i)
+            sum1 = sum1 - D[j] + D
+            D[j] = D
+            
+        P = np.divide(D, sum1)
+        
+
+args = sys.argv
+maxiter=0
+
+if len(args)==5:
+    if (args[1].isdigit() == False or args[2].isdigit() == False):
+        print("Invalid Input!")
+        sys.exit()
+
+    assert args[1].isdigit() , "Invalid input."
+    assert args[2].isdigit(), "Invalid input."
+    k = int(args[1])
+    maxiter=int(args[2])
+    inputfile1 =args[3]
+    inputfile2 =args[4]
+    kmeansPlus(k, maxiter,inputfile1, inputfile2)
     
-        for j in range(len(DataPoints)):
-            point=[]
-            for i in range (1,dimension+1):
-                point.append(DataPoints["dim" + str(i)][j])
-            
-            D = mindist(centroids_index, point, DataPoints, dimension)
-            sum1 = sum1 - DataPoints["D"][j] + D
-            DataPoints["D"][j] = D
-            
-        for j in range(len(DataPoints)):
-            DataPoints["P"][j] = DataPoints["D"][j]/sum1
+if len(args)==4:
+    if(args[1].isdigit()==False):
+        print("Invalid Input!")
+        sys.exit()
 
-
+    k = int(args[1])
+    maxiter=200
+    inputfile = args[2]
+    outputfile = args[3]
+    kmeansPlus(k, maxiter, inputfile1, inputfile2)       
         
-        
-
-
-
 
 
