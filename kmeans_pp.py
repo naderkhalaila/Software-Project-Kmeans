@@ -35,16 +35,16 @@ def kmeansPlus(k,max_iter, epsilon , filename1, filename2):
 def init(k, filename1 , filename2 , centroids, centroids_index):
 
     names = []
-    DataPoints = pd.read_csv(filename1,
-                             names=names + ["dim" + str(i) for i in range(len(DataPoints.columns))])
+    DataPoints = pd.read_csv(filename1)
+    dimension = len(DataPoints.column)
+    DataPoints.columns = names=names + ["dim" + str(i) for i in range(dimension)]
+    
     DataPoints["D"] = [0 for i in range(len(DataPoints))]
     DataPoints["P"] = [0 for i in range(len(DataPoints))]
-
-    dimensions = len(DataPoints.columns)
     
     np.random.seed(0)
     muo = np.random.choice(len(DataPoints), 1)
-    for i in range (dimensions):
+    for i in range (dimension):
         point1 = [DataPoints["dim"+str(i)][muo]]
     
     print(DataPoints)
@@ -53,9 +53,9 @@ def init(k, filename1 , filename2 , centroids, centroids_index):
         point1 = 
         DataPoints["D"][i] = dist(DataPoints)"""
     
-    i=1
+    """i=1
     while(i<k):
-        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())
+        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())"""
         
 
 
