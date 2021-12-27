@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
 
-"""names = []
-DataPoints = pd.read_csv(r'C:\Users\weamm\Downloads\input_1_db_1.txt' , names =names + ["dim" + str(i) for i in range(1,5)])
+
+DataPoints = pd.read_csv(r'C:\Users\weamm\Downloads\input_1_db_1.txt')
+dimension = len(DataPoints.columns)
+DataPoints.columns = ["dim" + str(i) for i in range(1,dimension+1)]
 DataPoints["D"] = [0 for i in range(len(DataPoints))]
 DataPoints["P"] = [0 for i in range(len(DataPoints))]
-print(DataPoints)
-print(DataPoints)"""
-
+point1=[]
+for i in range (1,dimension+1):
+        point1.append(DataPoints["dim" + str(i)][2])
+print(point1)
 
 def dist(point1, point2):
     sum = 0
@@ -16,7 +19,6 @@ def dist(point1, point2):
         sum += (point1[i] - point2[i]) ** 2
     sum = sum ** 0.5
     return sum
-
 
 def mindist(centroids_index, point2, DataPoints,dimension):
     min = "inf"
@@ -33,35 +35,55 @@ def mindist(centroids_index, point2, DataPoints,dimension):
 
     return centroids_index[index]
 
-
-def kmeansPlus(k, max_iter, epsilon, filename1, filename2):
+def kmeansPlus(k,max_iter, epsilon , filename1, filename2):
     centroids = []
-    centroids_index = []
+    centroids_index=[]
 
 
-def init(k, filename1, filename2, centroids, centroids_index):
 
+def init(k, filename1 , filename2 , centroids, centroids_index):
+
+    sum1 = 0
     DataPoints = pd.read_csv(filename1)
     dimension = len(DataPoints.column)
-    DataPoints.columns = ["dim" + str(i) for i in range(dimension)]
-
+    DataPoints.columns = ["dim" + str(i) for i in range(1,dimension+1)]
+    
     DataPoints["D"] = [0 for i in range(len(DataPoints))]
     DataPoints["P"] = [0 for i in range(len(DataPoints))]
-
+    
     np.random.seed(0)
     muo = np.random.choice(len(DataPoints), 1)
-    for i in range(dimension):
-        point1 = [DataPoints["dim" + str(i)][muo]]
-
-    print(DataPoints)
-
-    """for i in range len(DataPoints):
-        point1 = 
-        DataPoints["D"][i] = dist(DataPoints)"""
-
-    """i=1
+    
+    centroids_index.append(muo)
+    
+    point1=[]
+    for i in range (1,dimension+1):
+        point1.append(DataPoints["dim" + str(i)][muo])
+    
+        
+    for j in range(len(DataPoints)):
+        point2=[]
+        for i in range (1,dimension+1):
+            point2.append(DataPoints["dim" + str(i)][j])
+            
+        newD = dist(point1 , point2)
+        oldD = DataPoints["D"][j]
+        DataPoints["D"][j] = newD
+        sum1 = sum1 - oldD  + newD
+        
+    for j in range(len(DataPoints)):
+        DataPoints["P"][j] = DataPoints["D"][j]/sum1
+        
+    i=1
     while(i<k):
-        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())"""
-
+        muo = np.random.choice(len(DataPoints) , 1, p=DataPoints['P'].to_numpy())
+        centroids_index.append(muo)
+    
+        for j in range(len(DataPoints)):
+            point2=[]
+            for i in range (1,dimension+1):
+                point2.append(DataPoints["dim" + str(i)][j])
+        
+        
 
 
