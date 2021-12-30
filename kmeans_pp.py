@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+import mykmeanssp
 
 
 def dist(point1, point2):
@@ -8,6 +8,7 @@ def dist(point1, point2):
     d = len(point1)
     for i in range(d):
         sum += (point1[i] - point2[i]) ** 2
+    
     return sum
 
 
@@ -45,8 +46,25 @@ def kmeansPlus(k, MAX_ITER, filename1, filename2):
     centroids_index = np.ndarray(k, int)
 
     init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows  )
-    print(centroids_index)
-    print(centroids)
+    centroids =  mykmeanssp.fit(DataPoints, centroids, rows, dimension, k, MAX_ITER)
+    centroids = np.array(centroids)
+    centroids = np.round(centroids, decimals = 4)
+    print_centroids(centroids)
+    return None
+
+
+def print_centroids(centroids):
+    for i in range (len(centroids)):
+        centroid = centroids[i]
+        for j in range(len(centroid)):
+            if(j != (len(centroid)-1)):
+                print(str(centroid[j])+ ",", end="")
+            else:
+                if(i==len(centroids)-1):
+                    print(centroid[j], end="")
+                else:
+                    print(centroid[j])
+
 
 
 def ReadData(k, filename1, filename2):
@@ -59,7 +77,7 @@ def ReadData(k, filename1, filename2):
 
 
 def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
-    sum1 = 0
+    sum1=0
     D = np.zeros(rows)
     P = np.zeros(rows)
 
@@ -68,30 +86,25 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
     centroids_index[0] = mew
     centroids[0] = DataPoints[mew]
 
-    point1 = DataPoints[mew]
-    for j in range(rows):
-        point2 = DataPoints[j]
-        D[j] = dist(point1, point2)
-        sum1 = sum1 + D[j]
-
-    P = np.divide(D, sum1)
-
-    i = 1
-    while (i < k):
-        mew = np.random.choice(rows, p=P)
-        centroids_index[i] = mew
-        centroids[i] = DataPoints[mew]
-
-        for j in range(rows):
-            point = DataPoints[j]
-            d = mindist(centroids, point, DataPoints, dimension, i)
-
-            sum1 = sum1 - D[j] + d
-            D[j] = d
+    Z = 1
+    while Z<k:
+        for i in range(0, rows):
+            min = float("inf")
+            for j in range(0, Z):
+                distance = dist(DataPoints[i] , centroids[j])
+                if(distance<min):
+                    min = distance
+            sum1-=D[i]
+            D[i] = min
+            sum1+=D[i]
 
         P = np.divide(D, sum1)
+        index1 = np.random.choice(rows, p=P)
+        centroids_index[Z] = index1
+        centroids[Z] = DataPoints[index1]
+        Z+=1
 
-        i+=1
+
 
 import sys
 args = sys.argv
@@ -120,7 +133,7 @@ if len(args) == 4:
     inputfile = args[2]
     outputfile = args[3]
     kmeansPlus(k, maxiter, inputfile1, inputfile2)
-        
 
 
 
+ff = kmeansPlus(7 , 300 ,r'C:\Users\weamm\Downloads\input_2_db_1.txt' , r'C:\Users\weamm\Downloads\input_2_db_2.txt' )
