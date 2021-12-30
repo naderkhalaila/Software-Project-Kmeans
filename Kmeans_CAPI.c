@@ -214,3 +214,8 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
     return lst_centroids;
 }
 
+-------
+    
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+target_link_libraries(<your exe or lib> ${PYTHON_LIBRARIES})
