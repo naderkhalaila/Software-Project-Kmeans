@@ -1,15 +1,23 @@
 #include <Python.h>
 #define PY_SSIZE_T_CLEANS
+#include <stdio.h>
+#include <malloc.h>
+#include <math.h>
+#include <stdlib.h>
+
+static PyObject* kmeans_capi(PyObject *self, PyObject *args);
+static double **parse_arrays(PyObject* _list, int num_row, int num_col);
+static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int N, int d, int K, int MAX_ITER); //static?
 
 
 /* the wrapping function for the pseudo_main - parses PyObjects */
 static PyObject* kmeans_capi(PyObject *self, PyObject *args){
     PyObject *data, *centroids;
-    int N, d, K, MAX_ITER;
-    if(!PyArg_ParseTuple(args, "OOiiii", &data, &centroids, &N, &d, &K, &MAX_ITER)){
+    int rows, dim, K, MAX_ITER;
+    if(!PyArg_ParseTuple(args, "OOiiii", &data, &centroids, &rows, &dim, &K, &MAX_ITER)){
         return NULL;
     }
-    return Py_BuildValue("O", pseudo_main(data, centroids, N, d, K, MAX_ITER));
+    return Py_BuildValue("O", pseudo_main(data, centroids, rows, dim, K, MAX_ITER));
 }
 
 /* functino that parses the data and puts them in arrays */
@@ -152,7 +160,6 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
     int negative;
     int p = 1;
     int i, j;
-    double num, fr;
     double **centroids_list;
     double **sum_array;
     double **DataPoints;
@@ -214,8 +221,3 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
     return lst_centroids;
 }
 
--------
-    
-find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
-target_link_libraries(<your exe or lib> ${PYTHON_LIBRARIES})
