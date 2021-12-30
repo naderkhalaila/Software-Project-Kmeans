@@ -8,7 +8,6 @@ def dist(point1, point2):
     d = len(point1)
     for i in range(d):
         sum += (point1[i] - point2[i]) ** 2
-    sum = sum ** 0.5
     return sum
 
 
@@ -91,6 +90,7 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
             D[j] = d
 
         P = np.divide(D, sum1)
+
         i+=1
 
 import sys
@@ -120,6 +120,7 @@ if len(args) == 4:
     inputfile = args[2]
     outputfile = args[3]
     kmeansPlus(k, maxiter, inputfile1, inputfile2)
+        
 
 
 
