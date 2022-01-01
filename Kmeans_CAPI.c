@@ -12,6 +12,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int N, i
 
 /* the wrapping function for the pseudo_main - parses PyObjects */
 static PyObject* kmeans_capi(PyObject *self, PyObject *args){
+    
     PyObject *data, *centroids;
     int rows, dim, K, MAX_ITER;
     if(!PyArg_ParseTuple(args, "OOiiii", &data, &centroids, &rows, &dim, &K, &MAX_ITER)){
@@ -22,6 +23,7 @@ static PyObject* kmeans_capi(PyObject *self, PyObject *args){
 
 /* functino that parses the data and puts them in arrays */
 static double **parse_arrays(PyObject* _list, int num_row, int num_col) {
+    
     int i, j;
     Py_ssize_t Py_i, Py_j;
     double **parsed_data;
@@ -47,10 +49,11 @@ static double **parse_arrays(PyObject* _list, int num_row, int num_col) {
 
 /* this array tells python what methods this module has */
 static PyMethodDef capiMethods[] = {
+	
         {"fit",
                 (PyCFunction) kmeans_capi,
                      METH_VARARGS,
-                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                	PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -137,7 +140,7 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
     int bol = 1;
     for (i = 0; i < k; i++) {
         distance = dist(centroids_list[i], sum_array[i], dimension);
-        if (distance > 0.001) {
+        if (distance > 0.01) {
             bol = 0;
             break;
         }
@@ -154,11 +157,10 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
 
 /* initializing data and running the algorithm */
 static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_rows, int dim, int K, int MAX_ITER){
+    
     PyObject *lst_centroids, *vec, *num;
     int dimension = dim;
     int rows = num_rows;
-    int negative;
-    int p = 1;
     int i, j;
     double **centroids_list;
     double **sum_array;
@@ -166,9 +168,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
     int *count_array;
     int delta = 0;
     int iter;
-    double tmp;
-    char C;
-
+    
     /* initialising centroids, data, cSum, cNum, data_index*/
     DataPoints = parse_arrays(Py_data, rows, dimension);
     centroids_list = parse_arrays(Py_centroids, K, dimension);
