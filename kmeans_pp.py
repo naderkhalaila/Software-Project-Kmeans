@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import mykmeanssp
+import argparse
+import sys
 
 
 def dist(point1, point2):
@@ -8,24 +10,12 @@ def dist(point1, point2):
     d = len(point1)
     for i in range(d):
         sum += (point1[i] - point2[i]) ** 2
-    
+
     return sum
 
 
-def mindist(centroids, point2, DataPoints, dimension, z):
-    min = "inf"
-
-    for i in range(z+1):
-        point1 = centroids[i]
-        distance = dist(point1, point2)
-        if (min == "inf" or distance < min):
-            min = distance
-
-    return min
-
-
 def kmeansPlus(k, MAX_ITER, filename1, filename2):
-    DataPoints = ReadData(k,filename1, filename2)
+    DataPoints = ReadData(k, filename1, filename2)
 
     Data_indices = DataPoints.iloc[:, :1]
     Data_indices = Data_indices.to_numpy()
@@ -44,27 +34,27 @@ def kmeansPlus(k, MAX_ITER, filename1, filename2):
 
     centroids = np.ndarray((k, dimension), float)
     centroids_index = np.ndarray(k, int)
-
-    init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows  )
-    centroids =  mykmeanssp.fit(DataPoints, centroids, rows, dimension, k, MAX_ITER)
+    init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows)
+    Data_list = DataPoints.tolist()
+    centroids_list = centroids.tolist()
+    centroids = mykmeanssp.fit(Data_list, centroids_list, rows, dimension, k, MAX_ITER)
     centroids = np.array(centroids)
-    centroids = np.round(centroids, decimals = 4)
+    centroids = np.round(centroids, decimals=4)	
     print_centroids(centroids)
     return None
 
 
 def print_centroids(centroids):
-    for i in range (len(centroids)):
+    for i in range(len(centroids)):
         centroid = centroids[i]
         for j in range(len(centroid)):
-            if(j != (len(centroid)-1)):
-                print(str(centroid[j])+ ",", end="")
+            if (j != (len(centroid) - 1)):
+                print(str(centroid[j]) + ",", end="")
             else:
-                if(i==len(centroids)-1):
+                if (i == len(centroids) - 1):
                     print(centroid[j], end="")
                 else:
                     print(centroid[j])
-
 
 
 def ReadData(k, filename1, filename2):
@@ -77,7 +67,7 @@ def ReadData(k, filename1, filename2):
 
 
 def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
-    sum1=0
+    sum1 = 0
     D = np.zeros(rows)
     P = np.zeros(rows)
 
@@ -87,53 +77,55 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
     centroids[0] = DataPoints[mew]
 
     Z = 1
-    while Z<k:
+    while Z < k:
         for i in range(0, rows):
             min = float("inf")
             for j in range(0, Z):
-                distance = dist(DataPoints[i] , centroids[j])
-                if(distance<min):
+                distance = dist(DataPoints[i], centroids[j])
+                if (distance < min):
                     min = distance
-            sum1-=D[i]
+            sum1 -= D[i]
             D[i] = min
-            sum1+=D[i]
+            sum1 += D[i]
 
         P = np.divide(D, sum1)
         index1 = np.random.choice(rows, p=P)
         centroids_index[Z] = index1
         centroids[Z] = DataPoints[index1]
-        Z+=1
+        Z += 1
+    print(','.join(str(i) for i in centroids_index), flush=True)
 
 
 
-import sys
-args = sys.argv
-maxiter = 0
 
-if len(args) == 5:
-    if (args[1].isdigit() == False or args[2].isdigit() == False):
+def start(): #gets arguments and starts the algorethim.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("K", type=int, help="K is the number of clusters")
+    parser.add_argument("MAX_ITER", nargs="?", type=int, help="The maximum number of the K-means algorithm")
+    parser.add_argument("ep", type=float, help="epsilon")
+    parser.add_argument("file_name_1", type=str, help="The path to file 1 which contains N observations")
+    parser.add_argument("file_name_2", type=str, help="The path to file 2 which contains N observations")
+    args = parser.parse_args()
+    K = args.K 
+    MAX_ITER = args.MAX_ITER
+    ep = args.ep
+    file_name_1 = args.file_name_1
+    file_name_2 = args.file_name_2
+    #assertions
+    if MAX_ITER == None:
+    	MAX_ITER = 300
+    if MAX_ITER < 1:
         print("Invalid Input!")
-        sys.exit()
-
-    assert args[1].isdigit(), "Invalid input."
-    assert args[2].isdigit(), "Invalid input."
-    k = int(args[1])
-    maxiter = int(args[2])
-    inputfile1 = args[3]
-    inputfile2 = args[4]
-    kmeansPlus(k, maxiter, inputfile1, inputfile2)
-
-if len(args) == 4:
-    if (args[1].isdigit() == False):
+        return -1
+    if K == None:
         print("Invalid Input!")
-        sys.exit()
+        return -1
+    if(K<1):
+        print("Invalid Input!")
+        return -1
+    if (file_name_1 or file_name_2) == None:
+        print("Invalid Input!")
+        return -1
+    kmeansPlus(K, MAX_ITER, file_name_1, file_name_2)
 
-    k = int(args[1])
-    maxiter = 200
-    inputfile = args[2]
-    outputfile = args[3]
-    kmeansPlus(k, maxiter, inputfile1, inputfile2)
-
-
-
-ff = kmeansPlus(7 , 300 ,r'C:\Users\weamm\Downloads\input_2_db_1.txt' , r'C:\Users\weamm\Downloads\input_2_db_2.txt' )
+start()
