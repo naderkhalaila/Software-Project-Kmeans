@@ -41,6 +41,7 @@ def kmeansPlus(k, MAX_ITER, filename1, filename2):
     centroids = np.array(centroids)
     centroids = np.round(centroids, decimals=4)	
     print_centroids(centroids)
+    print()
     return None
 
 
