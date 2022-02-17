@@ -2,7 +2,7 @@
 #include <math.h>
 
 
- void TheWeightedAdjacencyMatrix(double **matrix , double **DataPoints , int dimension , int N){
+ void TheWeightedAdjacencyMatrix(int N ,int dimension ,double matrix[N][N] , double DataPoints[N][dimension]){
     int i,j,k;
     double norm;
     for (i = 0; i < N; i++) {
@@ -28,7 +28,7 @@
 }
 
 
-void TheDiagonalDegreeMatrix(double **matrix , double **WeightedAdjacencyMatrix, int dimension , int N){
+void TheDiagonalDegreeMatrix(int N , int dimension , double matrix[N][N] , double WeightedAdjacencyMatrix[N][N]){
 
     /* Matrix must be all zeros */
 
@@ -45,20 +45,13 @@ void TheDiagonalDegreeMatrix(double **matrix , double **WeightedAdjacencyMatrix,
 }
 
 
-void MatrixMultiplication (double ** matrix , double ** matrix1 , double ** matrix2  , int N){
+void MatrixMultiplication (int N ,double matrix[N][N] , double matrix1[N][N] , double matrix2[N][N]){
     int i , j , k ;
     double value;
     for (i=0 ; i < N ; i++){
-        printf("%d\n" , i);
-
         for (j=0 ; j<N ; j++){
-            printf("%d\n" , j);
-
             value = 0;
             for (k=0; k<N ; k++){
-                printf("%f\n" , matrix1[i][k]);
-                printf("%f\n" , matrix2[k][j]);
-
                 value+= matrix1[i][k]  * matrix2[k][j];
             }
             matrix[i][j] = value;
@@ -67,8 +60,8 @@ void MatrixMultiplication (double ** matrix , double ** matrix1 , double ** matr
 }
 
 
-void TheNormalizedGraphLaplacian (double **matrix ,double **DiagonalDegreeMatrix ,
-                                  double **WeightedAdjacencyMatrix, int dimension , int N){
+void TheNormalizedGraphLaplacian (int N , double matrix[N][N] ,double DiagonalDegreeMatrix[N][N] ,
+                                  double WeightedAdjacencyMatrix[N][N]){
     int i , j ;
     double Identity[N][N];
     for ( i = 0; i < N; i++) {
@@ -82,8 +75,8 @@ void TheNormalizedGraphLaplacian (double **matrix ,double **DiagonalDegreeMatrix
         }
     }
     double matrix1[N][N];
-    MatrixMultiplication(matrix1, DiagonalDegreeMatrix , WeightedAdjacencyMatrix, N);
-    MatrixMultiplication(matrix, matrix1 , DiagonalDegreeMatrix, N);
+    MatrixMultiplication(N , matrix1, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
+    MatrixMultiplication(N , matrix, matrix1 , DiagonalDegreeMatrix);
 
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++) {
@@ -94,7 +87,7 @@ void TheNormalizedGraphLaplacian (double **matrix ,double **DiagonalDegreeMatrix
 
 
 
-void CreatePmatrix(double **matrix, double ** Amatrix, int N) {
+void CreatePmatrix(int N , double matrix[N][N], double Amatrix[N][N]) {
     double max ;
     int i,j;
     int ii , jj;
@@ -145,7 +138,7 @@ void CreatePmatrix(double **matrix, double ** Amatrix, int N) {
 
 }
 
-void Ptrans(double **matrix , double** P, int N){
+void Ptrans(int N, double matrix[N][N] , double P[N][N]){
     int i ,j;
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -154,7 +147,7 @@ void Ptrans(double **matrix , double** P, int N){
     }
 }
 
-double convergence(double ** matrix1 , double ** matrix2 , int N){
+double convergence(int N, double matrix1[N][N] , double matrix2[N][N]){
     int i , j;
     double offMatrix1 , offMatrix2;
     offMatrix1 = 0;
@@ -172,7 +165,7 @@ double convergence(double ** matrix1 , double ** matrix2 , int N){
 }
 
 
-void Jacobi(double ** matrix , double **Vectors ,double** Lmatrix , int N){
+void Jacobi(int N, double matrix[N][N] , double Vectors[N][N] ,double Lmatrix[N][N]){
     double eps = 1.0 * exp(-15);
     int Max_Iter = 100;
     double conv ;
@@ -191,7 +184,7 @@ void Jacobi(double ** matrix , double **Vectors ,double** Lmatrix , int N){
     MatrixMultiplication(A_tag , temp , matrixP , N);
 
     Vectors =  matrixP;
-    conv = convergence(A, A_tag, N);
+    conv = convergence(N ,A, A_tag);
     if(conv <= eps){
         matrix = A_tag;
     }
@@ -210,48 +203,10 @@ void Jacobi(double ** matrix , double **Vectors ,double** Lmatrix , int N){
         MatrixMultiplication(temp , TmatrixP , A, N);
         MatrixMultiplication(A_tag , temp , matrixP , N);
 
-        conv = convergence(A, A_tag , N);
+        conv = convergence(N, A, A_tag);
         iter++;
 
     }
 
     matrix = A_tag;
-}
-
-
-void Eigengap(double *eigenvalues, double** A_tag , double ** eigenvectors){
-
-}
-
-void main(){
-    double **A = {{3,2,4},
-                  {2,0,2},
-                  {4,2,3}};
-
-    double **B = {{2,3,2},
-                  {1,2,3},
-                  {0,5,6}};
-
-    double matrixP[3][3];
-    double TmatrixP[3][3];
-
-    /*CreatePmatrix(matrixP , A , 3);
-
-    printf("r\n");
-
-    for(int i=0 ; i<3 ; i++){
-        printf("\n");
-        for(int j=0 ; j<3 ; j++) {
-            printf("%f ," , matrixP[i][j]);
-        }
-    }*/
-
-    MatrixMultiplication(matrixP , A, B , 3);
-
-    for(int i=0 ; i<3 ; i++) {
-        printf("\n");
-        for (int j = 0; j < 3; j++) {
-            printf("%f ,", matrixP[i][j]);
-        }
-    }
 }
