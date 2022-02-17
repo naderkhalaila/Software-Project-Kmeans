@@ -173,15 +173,15 @@ void Jacobi(int N, double matrix[N][N] , double Vectors[N][N] ,double Lmatrix[N]
 
     double matrixP[N][N];
     double TmatrixP[N][N];
-    CreatePmatrix(matrixP , Lmatrix , N);
-    Ptrans(TmatrixP , matrixP, N);
+    CreatePmatrix(N ,matrixP , Lmatrix);
+    Ptrans(N , TmatrixP , matrixP);
 
     double **A = Lmatrix;
-    double **A_tag[N][N];
-    double **temp[N][N];
+    double A_tag[N][N];
+    double temp[N][N];
 
-    MatrixMultiplication(temp , TmatrixP , A, N);
-    MatrixMultiplication(A_tag , temp , matrixP , N);
+    MatrixMultiplication(N,temp , TmatrixP , A);
+    MatrixMultiplication(N ,A_tag , temp , matrixP);
 
     Vectors =  matrixP;
     conv = convergence(N ,A, A_tag);
@@ -194,14 +194,14 @@ void Jacobi(int N, double matrix[N][N] , double Vectors[N][N] ,double Lmatrix[N]
         double **V;
         A = A_tag;
 
-        CreatePmatrix(matrixP, A , N);
-        Ptrans(TmatrixP , matrixP , N);
+        CreatePmatrix(N,matrixP, A);
+        Ptrans(N ,TmatrixP , matrixP);
 
-        MatrixMultiplication(V , Vectors , matrixP ,N);
+        MatrixMultiplication(N ,V , Vectors , matrixP);
         Vectors=V;
 
-        MatrixMultiplication(temp , TmatrixP , A, N);
-        MatrixMultiplication(A_tag , temp , matrixP , N);
+        MatrixMultiplication(N, temp , TmatrixP , A);
+        MatrixMultiplication(N, A_tag , temp , matrixP);
 
         conv = convergence(N, A, A_tag);
         iter++;
@@ -209,4 +209,42 @@ void Jacobi(int N, double matrix[N][N] , double Vectors[N][N] ,double Lmatrix[N]
     }
 
     matrix = A_tag;
+}
+
+
+void Eigengap(double *eigenvalues, double** A_tag , double ** eigenvectors){
+
+}
+
+void main(){
+    double A[3][3] = {{3,2,4},
+                  {2,0,2},
+                  {4,2,3}};
+
+    double B[3][3] = {{2,3,2},
+                  {1,2,3},
+                  {0,5,6}};
+
+    double matrixP[3][3];
+    double TmatrixP[3][3];
+
+    /*CreatePmatrix(matrixP , A , 3);
+
+    printf("r\n");
+
+    for(int i=0 ; i<3 ; i++){
+        printf("\n");
+        for(int j=0 ; j<3 ; j++) {
+            printf("%f ," , matrixP[i][j]);
+        }
+    }*/
+
+    MatrixMultiplication(matrixP , A, B , 3);
+
+    for(int i=0 ; i<3 ; i++) {
+        printf("\n");
+        for (int j = 0; j < 3; j++) {
+            printf("%f ,", matrixP[i][j]);
+        }
+    }
 }
