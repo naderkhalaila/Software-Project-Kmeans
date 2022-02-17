@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
-
- void TheWeightedAdjacencyMatrix(int N ,int dimension ,double matrix[N][N] , double DataPoints[N][dimension]){
+ void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints){
     int i,j,k;
     double norm;
     for (i = 0; i < N; i++) {
@@ -28,7 +28,7 @@
 }
 
 
-void TheDiagonalDegreeMatrix(int N , int dimension , double matrix[N][N] , double WeightedAdjacencyMatrix[N][N]){
+void TheDiagonalDegreeMatrix(int N , int dimension , double **matrix , double **WeightedAdjacencyMatrix){
 
     /* Matrix must be all zeros */
 
@@ -45,7 +45,7 @@ void TheDiagonalDegreeMatrix(int N , int dimension , double matrix[N][N] , doubl
 }
 
 
-void MatrixMultiplication (int N ,double matrix[N][N] , double matrix1[N][N] , double matrix2[N][N]){
+void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **matrix2){
     int i , j , k ;
     double value;
     for (i=0 ; i < N ; i++){
@@ -60,8 +60,8 @@ void MatrixMultiplication (int N ,double matrix[N][N] , double matrix1[N][N] , d
 }
 
 
-void TheNormalizedGraphLaplacian (int N , double matrix[N][N] ,double DiagonalDegreeMatrix[N][N] ,
-                                  double WeightedAdjacencyMatrix[N][N]){
+void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegreeMatrix ,
+                                  double **WeightedAdjacencyMatrix){
     int i , j ;
     double Identity[N][N];
     for ( i = 0; i < N; i++) {
@@ -87,7 +87,7 @@ void TheNormalizedGraphLaplacian (int N , double matrix[N][N] ,double DiagonalDe
 
 
 
-void CreatePmatrix(int N , double matrix[N][N], double Amatrix[N][N]) {
+void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     double max ;
     int i,j;
     int ii , jj;
@@ -106,14 +106,15 @@ void CreatePmatrix(int N , double matrix[N][N], double Amatrix[N][N]) {
         }
     }
 
-    tita = (Amatrix[jj][jj] - Amatrix[ii][ii])/2*max;
+    tita = (Amatrix[jj][jj] - Amatrix[ii][ii])/(2*max);
     if(tita>=0){
         sign = 1;
     }else{
         sign = -1;
     }
 
-    t = sign/(abs(tita) + sqrt(pow(tita,2) +1));
+
+    t = (sign)/((sign*(tita)) + (sqrt(pow(tita,2) +1)));
     c = 1/sqrt(pow(t,2) +1);
     s = t*c;
 
@@ -135,10 +136,9 @@ void CreatePmatrix(int N , double matrix[N][N], double Amatrix[N][N]) {
 
     matrix[ii][jj] = s;
     matrix[jj][ii] = -s;
-
 }
 
-void Ptrans(int N, double matrix[N][N] , double P[N][N]){
+void Ptrans(int N, double **matrix , double **P){
     int i ,j;
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -147,7 +147,7 @@ void Ptrans(int N, double matrix[N][N] , double P[N][N]){
     }
 }
 
-double convergence(int N, double matrix1[N][N] , double matrix2[N][N]){
+double convergence(int N, double **matrix1 , double **matrix2){
     int i , j;
     double offMatrix1 , offMatrix2;
     offMatrix1 = 0;
@@ -165,7 +165,7 @@ double convergence(int N, double matrix1[N][N] , double matrix2[N][N]){
 }
 
 
-void Jacobi(int N, double matrix[N][N] , double Vectors[N][N] ,double Lmatrix[N][N]){
+void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
     double eps = 1.0 * exp(-15);
     int Max_Iter = 100;
     double conv ;
@@ -218,33 +218,45 @@ void Eigengap(double *eigenvalues, double** A_tag , double ** eigenvectors){
 
 void main(){
     double A[3][3] = {{3,2,4},
-                  {2,0,2},
-                  {4,2,3}};
+                      {2,0, 2},
+                      {4, 2,3}};
 
     double B[3][3] = {{2,3,2},
-                  {1,2,3},
-                  {0,5,6}};
+                      {1,2,3},
+                      {0,5,6}};
 
-    double matrixP[3][3];
-    double TmatrixP[3][3];
+    double**AP;
+    double**BP;
+    double **matrix;
+    double **matrixP;
+    double **TmatrixP;
+    int i ,j;
 
-    /*CreatePmatrix(matrixP , A , 3);
+    AP = malloc(sizeof(double *) * 3);
+    BP = malloc(sizeof(double *) * 3);
+    matrix = malloc(sizeof(double *) * 3);
+    matrixP = malloc(sizeof(double *) * 3);
+    TmatrixP = malloc(sizeof(double *) * 3);
+    for (i = 0; i<3; i++) {
+        AP[i] = (double *) malloc((3) * sizeof(double));
+        BP[i] = (double *) malloc((3) * sizeof(double));
+        matrix[i] = (double *) malloc((3) * sizeof(double));
+        matrixP[i] = (double *) malloc((3) * sizeof(double));
+        TmatrixP[i] = (double *) malloc((3) * sizeof(double));
+    }
 
-    printf("r\n");
-
-    for(int i=0 ; i<3 ; i++){
-        printf("\n");
-        for(int j=0 ; j<3 ; j++) {
-            printf("%f ," , matrixP[i][j]);
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            AP[i][j] = A[i][j];
+            BP[i][j] = B[i][j];
         }
-    }*/
+    }
 
-    MatrixMultiplication(matrixP , A, B , 3);
-
-    for(int i=0 ; i<3 ; i++) {
+    Jacobi(3, matrix , matrixP , AP);
+    for( i=0 ; i<3 ; i++) {
         printf("\n");
-        for (int j = 0; j < 3; j++) {
-            printf("%f ,", matrixP[i][j]);
+        for (j = 0; j < 3; j++) {
+            printf("%f ,", matrix[i][j]);
         }
     }
 }
