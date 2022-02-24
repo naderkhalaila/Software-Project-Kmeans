@@ -341,15 +341,29 @@ void NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoi
     }
 
     U = malloc(sizeof(double *) * k);
+    t = malloc(sizeof(double *) * k);
     for (i = 0; i<K; i++) {
-        U[i] = malloc(sizeof(double *) * N);
+        U[i] = (double *) malloc(sizeof(double *) * N);
+        t[i] = (double *) malloc(sizeof(double *) * N);
     }
- 
+
     for (i = 0; i<K; i++) {
         for (j = 0 ; j<N ; j++){
             U[i][j] = NormalizedGraphLaplacian[i][j];
         }
     }
+
+    
+    for (i = 0; i<K; i++) {
+        for (j = 0 ; j<N ; j++){
+
+        }
+        for (j = 0 ; j<N ; j++){
+
+        }
+    }
+
+
 };
 
 
