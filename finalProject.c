@@ -28,7 +28,7 @@
 }
 
 
-void TheDiagonalDegreeMatrix(int N , int dimension , double **matrix , double **WeightedAdjacencyMatrix){
+void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacencyMatrix){
 
     /* Matrix must be all zeros */
 
@@ -74,7 +74,12 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
             }
         }
     }
-    double matrix1[N][N];
+
+    double **matrix1;
+    matrix1 = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        matrix1[i] = (double *) malloc(sizeof(double *) * N);
+    }
     MatrixMultiplication(N , matrix1, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
     MatrixMultiplication(N , matrix, matrix1 , DiagonalDegreeMatrix);
 
@@ -139,12 +144,15 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
 }
 
 void Ptrans(int N, double **matrix , double **P){
+
     int i ,j;
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
+
             matrix[i][j]= P[j][i];
         }
     }
+
 }
 
 double convergence(int N, double **matrix1 , double **matrix2){
@@ -170,60 +178,189 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
     int Max_Iter = 100;
     double conv ;
     int iter =0;
+    int i;
 
-    double matrixP[N][N];
-    double TmatrixP[N][N];
+    double **matrixP ,**TmatrixP , **A , **A_tag , **temp;
+
+    matrixP = malloc(sizeof(double *) * N);
+    TmatrixP = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        matrixP[i] = (double *) malloc((N) * sizeof(double));
+        TmatrixP[i] = (double *) malloc((N) * sizeof(double));
+    }
+
     CreatePmatrix(N ,matrixP , Lmatrix);
     Ptrans(N , TmatrixP , matrixP);
 
-    double **A = Lmatrix;
-    double A_tag[N][N];
-    double temp[N][N];
+    A = malloc(sizeof(double *) * N);
+    A_tag = malloc(sizeof(double *) * N);
+    temp = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        A[i] = (double *) malloc((N) * sizeof(double));
+        A_tag[i] = (double *) malloc((N) * sizeof(double));
+        temp[i] = (double *) malloc((N) * sizeof(double));
+    }
+
+    for( i=0 ; i<N ; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = Lmatrix[i][j];
+        }
+    }
 
     MatrixMultiplication(N,temp , TmatrixP , A);
     MatrixMultiplication(N ,A_tag , temp , matrixP);
 
-    Vectors =  matrixP;
-    conv = convergence(N ,A, A_tag);
-    if(conv <= eps){
-        matrix = A_tag;
+    for( i=0 ; i<N ; i++) {
+        for (int j = 0; j < N; j++) {
+            Vectors[i][j] = matrixP[i][j];
+        }
     }
 
+    conv = convergence(N ,A, A_tag);
+    if(conv <= eps){
+        for( i=0 ; i<N ; i++) {
+            for (int j = 0; j < N; j++) {
+                matrix[i][j] = A_tag[i][j];
+            }
+        }
+    }
 
-    while(conv > eps && iter < 100){
+    while(conv > eps && iter < Max_Iter){
+
         double **V;
-        A = A_tag;
+        V = malloc(sizeof(double *) * N);
+        for (i = 0; i<N; i++) {
+            V[i] = (double *) malloc((N) * sizeof(double));
+        }
+
+        for( i=0 ; i<N ; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = A_tag[i][j];
+            }
+        }
 
         CreatePmatrix(N,matrixP, A);
         Ptrans(N ,TmatrixP , matrixP);
 
         MatrixMultiplication(N ,V , Vectors , matrixP);
-        Vectors=V;
+        for( i=0 ; i<N ; i++) {
+            for (int j = 0; j < N; j++) {
+                Vectors[i][j] = V[i][j];
+            }
+        }
 
         MatrixMultiplication(N, temp , TmatrixP , A);
         MatrixMultiplication(N, A_tag , temp , matrixP);
 
         conv = convergence(N, A, A_tag);
         iter++;
-
     }
 
-    matrix = A_tag;
+    for( i=0 ; i<N ; i++) {
+        for (int j = 0; j < N; j++) {
+            matrix[i][j] = A_tag[i][j];
+        }
+    }
 }
 
-
-void Eigengap(double *eigenvalues, double** A_tag , double ** eigenvectors){
-
+void swap(double *xp, double *yp)
+{
+    double temp = *xp;
+    *xp = *yp;
+    *yp = temp;
 }
 
-void main(){
-    double A[3][3] = {{3,2,4},
-                      {2,0, 2},
-                      {4, 2,3}};
+void selectionSort(int N , double *arr)
+{
+    int i, j, min_idx;
 
-    double B[3][3] = {{2,3,2},
-                      {1,2,3},
-                      {0,5,6}};
+    // One by one move boundary of unsorted subarray
+    for (i = 0; i < N-1; i++)
+    {
+        // Find the minimum element in unsorted array
+        min_idx = i;
+        for (j = i+1; j < N; j++)
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+
+        // Swap the found minimum element with the first element
+        swap(&arr[min_idx], &arr[i]);
+    }
+}
+
+int Eigengap(int N ,double *eigenvalues){
+    int k =0;
+    double arr[N];
+    double max = fabs(eigenvalues[0] - eigenvalues[1]);
+    arr[0]= max;
+
+    selectionSort(N, eigenvalues);
+
+    for(int i=1 ; i< floor(N/2) ; i++){
+        arr[i] = (eigenvalues[i] - eigenvalues[i+1]);
+        if(arr[i]>max){
+            max=arr[i];
+            k=i;
+        }
+    }
+
+    return k;
+}
+
+void NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoints){
+    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U , **t;
+    double *eign;
+    int i , j ,  k;
+
+    eign = malloc(sizeof(double *) * N);
+
+    eigenvalues =  malloc(sizeof(double *) * N);
+    eigenvectors = malloc(sizeof(double *) * N);
+    NormalizedGraphLaplacian = malloc(sizeof(double *) * N);
+    DiagonalDegreeMatrix = malloc(sizeof(double *) * N);
+    WeightedAdjacencyMatrix = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        NormalizedGraphLaplacian[i] = (double *)malloc(sizeof(double *) * N);
+        eigenvectors[i] = (double *)malloc(sizeof(double *) * N);
+        eigenvalues[i] = (double *)malloc(sizeof(double *) * N);
+        DiagonalDegreeMatrix[i] = (double *) malloc((N) * sizeof(double));
+        WeightedAdjacencyMatrix[i] = (double *) malloc((N) * sizeof(double));
+    }
+
+    TheWeightedAdjacencyMatrix(N, dimension , WeightedAdjacencyMatrix , DataPoints);
+    TheDiagonalDegreeMatrix(N , DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
+    TheNormalizedGraphLaplacian(N , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix );
+    Jacobi(N , eigenvalues , eigenvectors , NormalizedGraphLaplacian);
+
+    if(K == -1) {
+        for (i = 0; i < N; i++) {
+            eign[i] = eigenvalues[i][i];
+        }
+
+        k = Eigengap(N, eign);
+    }
+
+    U = malloc(sizeof(double *) * k);
+    for (i = 0; i<K; i++) {
+        U[i] = malloc(sizeof(double *) * N);
+    }
+ 
+    for (i = 0; i<K; i++) {
+        for (j = 0 ; j<N ; j++){
+            U[i][j] = NormalizedGraphLaplacian[i][j];
+        }
+    }
+};
+
+
+int main(){
+    double A[3][3] = {{3, 2, 4},
+                      {2, 0, 2},
+                      {4, 2, 3}};
+
+    double B[3][3] = {{1,0,0},
+                      {0,4/(3* sqrt(2)),1/3},
+                      {0,-1/3,4/(3* sqrt(2))}};
 
     double**AP;
     double**BP;
@@ -252,11 +389,14 @@ void main(){
         }
     }
 
-    Jacobi(3, matrix , matrixP , AP);
+    Jacobi(3 ,matrix , matrixP, AP);
+
+
     for( i=0 ; i<3 ; i++) {
         printf("\n");
         for (j = 0; j < 3; j++) {
             printf("%f ,", matrix[i][j]);
         }
     }
+    return 1;
 }
