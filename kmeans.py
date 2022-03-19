@@ -122,12 +122,4 @@ if len(args)==4:
 
 
 
-#lst = kmeans(7, 200, r"C:\Users\nadsa\Documents\SW-project\hw1\tests\input_9.txt",r"C:\Users\nadsa\Documents\SW-project\result_1.txt")
 
-
-
-"""
--4.3095,9.0182,5.3354
-8.2052,-8.6995,-8.5803
-9.7608,-5.7197,-7.2840
-"""
