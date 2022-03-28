@@ -24,13 +24,11 @@ void print(double **matrix, int rows, int col) {
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints){
     int i,j,k;
     double norm;
-    for (i = 0; i < N; i++) {
-        matrix[i][i] = 0;
-    }
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++){
             if(j == i){
+                matrix[i][j] = 0;
                 continue;
             }
 
@@ -644,18 +642,9 @@ int kmeans(char filename[], int Goal) {
 
     return 0;
 }
-/*
-int main() {
-
-    char path[] = "C:\\Users\\weamm\\Documents\\example.txt";
-    kmeans(path, 4);
-    return 0;
-
-}*/
-
 
 int main(int argc, char** argv) {
-    if(argc != 2){
+    if(argc != 3){
         printf("Invalid Input!");
         return 0;
     }
