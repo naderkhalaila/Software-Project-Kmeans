@@ -83,8 +83,13 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
 void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegreeMatrix ,
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
-    double Identity[N][N];
+    double **Identity;
     double **matrix1;
+
+    Identity = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        Identity[i] = (double *) malloc(sizeof(double *) * N);
+    }
 
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
@@ -307,17 +312,13 @@ void swap(double *xp, double *yp)
 void selectionSort(int N , double *arr)
 {
     int i, j, min_idx;
-
-    // One by one move boundary of unsorted subarray
     for (i = 0; i < N-1; i++)
     {
-        // Find the minimum element in unsorted array
         min_idx = i;
         for (j = i+1; j < N; j++)
             if (arr[j] < arr[min_idx])
                 min_idx = j;
 
-        // Swap the found minimum element with the first element
         swap(&arr[min_idx], &arr[i]);
     }
 }
@@ -325,9 +326,11 @@ void selectionSort(int N , double *arr)
 int Eigengap(int N ,double *eigenvalues){
     int k =0;
     int i;
-    double arr[N];
+    double *arr;
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
+
     arr[0]= max;
+    arr = malloc(sizeof(double *) * N);
 
     selectionSort(N, eigenvalues);
 
@@ -346,7 +349,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
-
+    int sum;
+    
     eign = malloc(sizeof(double *) * N);
 
     eigenvalues =  malloc(sizeof(double *) * N);
@@ -392,7 +396,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
-    int sum;
+
     for(i = 0 ; i<N ; i++){
         sum = 0;
         for(j = 0 ; j<k ; j++){
