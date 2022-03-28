@@ -3,6 +3,19 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+void print(double **matrix, int rows, int col) {
+    int i;
+    int j;
+    for(i=0;i<rows;i++){
+        for ( j = 0; j < col; j++) {
+            printf("%.3f",matrix[i][j]);
+            if(j<col-1){
+                printf(",");
+            }
+        }
+        printf("\n");
+    }
+}
 
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints){
     int i,j,k;
@@ -21,7 +34,7 @@ void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double *
             for(k=0 ; k< dimension ; k++){
                 norm += pow((DataPoints[i][k] - DataPoints[j][k]), 2);
             }
-            matrix[i][j] = exp(-(sqrt(norm)/2));
+            matrix[i][j] =exp(-(sqrt(norm)/2));
         }
     }
 }
@@ -32,14 +45,19 @@ void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacenc
     /* Matrix must be all zeros */
 
     int i , j ;
-    double value;
+    double value , d;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            matrix[i][j] = 0;
+        }
+    }
     for (i = 0; i < N; i++) {
         value =0;
         for (j = 0; j < N; j++){
             value += WeightedAdjacencyMatrix[i][j];
-            value = 1/ sqrt(value);
+            d = 1/ sqrt(value);
         }
-        matrix[i][i] = value;
+        matrix[i][i] = d;
     }
 }
 
@@ -56,6 +74,7 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
             matrix[i][j] = value;
         }
     }
+
 }
 
 
@@ -63,18 +82,20 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
     double Identity[N][N];
+    double **matrix1;
+
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
             if(i==j){
-                matrix[i][j] = 1;
+                Identity[i][j] = 1;
             }
             else{
-                matrix[i][j]=0;
+                Identity[i][j]=0;
             }
         }
     }
 
-    double **matrix1;
+
     matrix1 = malloc(sizeof(double *) * N);
     for (i = 0; i<N; i++) {
         matrix1[i] = (double *) malloc(sizeof(double *) * N);
@@ -523,21 +544,6 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
 
 }
 
-
-void print(double **matrix, int rows, int col) {
-    int i;
-    int j;
-    for(i=0;i<rows;i++){
-        for ( j = 0; j < col; j++) {
-            printf("%.3f",matrix[i][j]);
-            if(j<col-1){
-                printf(",");
-            }
-        }
-        printf("\n");
-    }
-}
-
 int kmeans(char filename[], int Goal) {
     int dimension = 0;
     int rows = 0;
@@ -631,6 +637,6 @@ int kmeans(char filename[], int Goal) {
 int main() {
 
     char path[] = "C:\\Users\\weamm\\Documents\\example.txt";
-    kmeans(path, 1);
+    kmeans(path, 4);
     return 0;
 }
