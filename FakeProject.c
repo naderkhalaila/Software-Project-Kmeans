@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define PY_SSIZE_T_CLEANS
 #include <malloc.h>
+#include <string.h>
+
+double absDouble(double d);
 
 void print(double **matrix, int rows, int col) {
     int i;
@@ -116,26 +120,26 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 }
 
 
-
 void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     double max ;
-    int i,j;
-    int ii , jj;
-    int sign;
+    int i,j, ii , jj ,sign;
     double tita, s, c, t;
-    max =Amatrix[0][0];
+    max = absDouble(Amatrix[0][1]);
     ii =0;
-    jj =0;
+    jj =1;
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            if(i!=j && Amatrix[i][j]>max){
-                max= Amatrix[i][j];
+            if(i!=j && absDouble(Amatrix[i][j])>max){
+                max= absDouble(Amatrix[i][j]);
                 ii = i;
                 jj = j;
+
             }
         }
     }
-
+    if(Amatrix[ii][jj]< 0){
+        max = -max;
+    }
     tita = (Amatrix[jj][jj] - Amatrix[ii][ii])/(2*max);
     if(tita>=0){
         sign = 1;
@@ -162,10 +166,17 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     matrix[ii][ii] = c;
     matrix[jj][jj] = c;
 
-    /*check*/
-
     matrix[ii][jj] = s;
     matrix[jj][ii] = -s;
+}
+
+double absDouble(double d) {
+    if(d >= 0 ){
+        return d;
+    }
+    else{
+        return -d;
+    }
 }
 
 void Ptrans(int N, double **matrix , double **P){
@@ -547,10 +558,10 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
 int kmeans(char filename[], int Goal) {
     int dimension = 0;
     int rows = 0;
-    int Temp =0;
-    int i, j ,column;
+    int Temp = 0;
+    int i, j, column;
     double **DataPoints;
-    double** WeightedAdjacencyMatrix, **DiagonalDegreeMatrix, **NormalizedGraphLaplacian ,**jacobi ,**Vectors  , **matrix;
+    double **WeightedAdjacencyMatrix, **DiagonalDegreeMatrix, **NormalizedGraphLaplacian, **jacobi, **Vectors, **matrix;
 
 
     Sizefile(filename, &dimension, &rows);
@@ -558,46 +569,46 @@ int kmeans(char filename[], int Goal) {
     for (i = 0; i < rows; i++) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
-    Getpoints(filename , rows , dimension , DataPoints);
+    Getpoints(filename, rows, dimension, DataPoints);
 
 
-    if (Temp != Goal){
-        Temp ++;
+    if (Temp != Goal) {
+        Temp++;
         WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             WeightedAdjacencyMatrix[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
+        TheWeightedAdjacencyMatrix(rows, dimension, WeightedAdjacencyMatrix, DataPoints);
 
-        if(Temp == Goal){
+        if (Temp == Goal) {
             column = rows;
-            print(WeightedAdjacencyMatrix , rows , column );
+            print(WeightedAdjacencyMatrix, rows, column);
             return 1;
         }
     }
-    if (Temp != Goal){
-        Temp ++;
+    if (Temp != Goal) {
+        Temp++;
         DiagonalDegreeMatrix = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             DiagonalDegreeMatrix[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
-        if(Temp == Goal){
+        TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+        if (Temp == Goal) {
             column = rows;
-            print(DiagonalDegreeMatrix , rows , column);
+            print(DiagonalDegreeMatrix, rows, column);
             return 1;
         }
     }
-    if (Temp != Goal){
-        Temp ++;
+    if (Temp != Goal) {
+        Temp++;
         NormalizedGraphLaplacian = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
-        if(Temp == Goal){
+        TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+        if (Temp == Goal) {
             column = rows;
-            print(NormalizedGraphLaplacian , rows , column);
+            print(NormalizedGraphLaplacian, rows, column);
             return 1;
         }
     }
@@ -621,22 +632,56 @@ int kmeans(char filename[], int Goal) {
         for (i = 0; i < rows; i++) {
             matrix[0][i] = jacobi[i][i];
         }
-        for (i = 1; i < rows; i++) {
+        for (i = 0; i < rows; i++) {
             for (j = 0; j < rows; j++) {
-                matrix[i][j] = Vectors[i - 1][j];
+                matrix[i + 1][j] = Vectors[i][j];
             }
         }
         column = rows;
-        print(matrix , rows+1 , column);
+        print(matrix, rows + 1, column);
         return 1;
     }
 
     return 0;
-
 }
+/*
 int main() {
 
     char path[] = "C:\\Users\\weamm\\Documents\\example.txt";
     kmeans(path, 4);
+    return 0;
+
+}*/
+
+
+int main(int argc, char** argv) {
+    if(argc != 2){
+        printf("Invalid Input!");
+        return 0;
+    }
+    if(strcmp(argv[1],"wam")==0){
+        return kmeans(argv[2] , 1);
+    }
+    else{
+        if (strcmp(argv[1],"ddg")==0){
+            return kmeans(argv[2] , 2);
+        }
+        else{
+            if(strcmp(argv[1],"lnorm")==0){
+                return kmeans(argv[2] , 3);
+            }
+            else{
+                if(strcmp(argv[1],"jacobi")==0){
+                    return kmeans(argv[2] , 4);
+                }
+                else{
+                    printf("Invalid Input!");
+                    return 0;
+                }
+            }
+        }
+    }
+
+
     return 0;
 }
