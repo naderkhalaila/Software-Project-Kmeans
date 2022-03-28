@@ -328,10 +328,9 @@ int Eigengap(int N ,double *eigenvalues){
     int i;
     double *arr;
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
-
-    arr[0]= max;
     arr = malloc(sizeof(double *) * N);
 
+    arr[0]= max;
     selectionSort(N, eigenvalues);
 
     for( i=1 ; i< floor(N/2) ; i++){
@@ -350,7 +349,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     double *eign;
     int i , j ,  k;
     int sum;
-    
+
     eign = malloc(sizeof(double *) * N);
 
     eigenvalues =  malloc(sizeof(double *) * N);
