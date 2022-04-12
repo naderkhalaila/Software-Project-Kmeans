@@ -16,7 +16,7 @@ static PyObject* kmeans_capi(PyObject *self, PyObject *args){
     PyObject *data, *centroids;
     int rows, dim, K, MAX_ITER;
     int goal , Part;
-    if(!PyArg_ParseTuple(args, "OOiiii", &data, &centroids, &rows, &dim, &K, &MAX_ITER , &goal , &Part)){
+    if(!PyArg_ParseTuple(args, "OOiiiiii", &data, &centroids, &rows, &dim, &K, &MAX_ITER , &goal , &Part)){
         return NULL;
     }
     return Py_BuildValue("O", pseudo_main(data, centroids, rows, dim, K, MAX_ITER, goal , Part));
@@ -152,7 +152,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
             Jacobi(rows, jacobi , Vectors ,NormalizedGraphLaplacian);
 
-            for (i = 0 ; i < rows ; i++){
+            for (i = 0 ; i < rows+1 ; i++){
                 matrix[0][i] = jacobi[i][i];
             }
             for (i =1 ; i < rows ; i++){
@@ -213,3 +213,4 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         return lst_centroids;
     }
 }
+
