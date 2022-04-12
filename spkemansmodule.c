@@ -82,7 +82,7 @@ PyInit_mykmeanssp(void) {
 static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_rows, int dim, int K, int MAX_ITER,
                              int goal , int Part){
 
-    PyObject *lst_centroids, *vec, *num;
+    PyObject *array, *vec, *num ,*lst_centroids ;
     int dimension = dim;
     int rows = num_rows;
     int Goal = goal;
@@ -110,7 +110,26 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
             if(Temp == Goal){
-                return WeightedAdjacencyMatrix;
+
+                array = PyList_New(rows);
+                if (!array){
+                    return NULL;
+                }
+                for(i=0; i<rows; i++){
+                    vec = PyList_New(rows);
+                    if (!vec){
+                        return NULL;
+                    }
+                    for (j = 0; j < rows; j++) {
+                        num = PyFloat_FromDouble(WeightedAdjacencyMatrix[i][j]);
+                        if (!num) {
+                            Py_DECREF(vec);
+                            return NULL;
+                        }PyList_SET_ITEM(vec, j, num);
+                    }PyList_SET_ITEM(array, i, vec);
+                }
+
+                return array;
             }
         }
         if (Temp != Goal){
@@ -121,7 +140,25 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
             if(Temp == Goal){
-                return DiagonalDegreeMatrix;
+
+                array = PyList_New(rows);
+                if (!array){
+                    return NULL;
+                }
+                for(i=0; i<rows; i++){
+                    vec = PyList_New(rows);
+                    if (!vec){
+                        return NULL;
+                    }
+                    for (j = 0; j < rows; j++) {
+                        num = PyFloat_FromDouble(DiagonalDegreeMatrix[i][j]);
+                        if (!num) {
+                            Py_DECREF(vec);
+                            return NULL;
+                        }PyList_SET_ITEM(vec, j, num);
+                    }PyList_SET_ITEM(array, i, vec);
+                }
+                return array;
             }
         }
         if (Temp != Goal){
@@ -132,12 +169,32 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
             if(Temp == Goal){
-                return NormalizedGraphLaplacian;
+
+                array = PyList_New(rows);
+                if (!array){
+                    return NULL;
+                }
+                for(i=0; i<rows; i++){
+                    vec = PyList_New(rows);
+                    if (!vec){
+                        return NULL;
+                    }
+                    for (j = 0; j < rows; j++) {
+                        num = PyFloat_FromDouble(NormalizedGraphLaplacian[i][j]);
+                        if (!num) {
+                            Py_DECREF(vec);
+                            return NULL;
+                        }PyList_SET_ITEM(vec, j, num);
+                    }PyList_SET_ITEM(array, i, vec);
+                }
+
+                return array;
             }
         }
 
         if (Temp != Goal){
             Temp ++;
+
             jacobi = malloc(sizeof(double *) * rows);
             Vectors = malloc(sizeof(double *) * rows);
             for (i = 0; i<rows; i++) {
