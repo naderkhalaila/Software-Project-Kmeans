@@ -5,31 +5,40 @@
 #define PY_SSIZE_T_CLEANS
 #include <malloc.h>
 
+double absDouble(double d);
+
+void print(double **matrix, int rows, int col) {
+    int i;
+    int j;
+    for(i=0;i<rows;i++){
+        for ( j = 0; j < col; j++) {
+            printf("%.3f",matrix[i][j]);
+            if(j<col-1){
+                printf(",");
+            }
+        }
+        printf("\n");
+    }
+}
 
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints){
     int i,j,k;
     double norm;
-    for (i = 0; i < N; i++) {
-        matrix[i][i] = 0;
-    }
 
     for (i = 0; i < N; i++) {
-        for (j = i+1; j < N; j++){
+        for (j = 0; j < N; j++){
+            if(j == i){
+                matrix[i][i] = 0;
+                continue;
+            }
+
             norm = 0;
             for(k=0 ; k< dimension ; k++){
-                norm += pow((DataPoints[i][k] - DataPoints[j][k]),2);
+                norm += pow((DataPoints[i][k] - DataPoints[j][k]), 2);
             }
-            matrix[i][j] = exp(-(sqrt(norm)/2));
+            matrix[i][j] =exp(-(sqrt(norm)/2));
         }
     }
-
-
-    for (i = 1; i < N; i++) {
-        for (j = 0; j < i; j++){
-            matrix[i][j] = matrix[j][i];
-        }
-    }
-
 }
 
 
@@ -38,14 +47,19 @@ void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacenc
     /* Matrix must be all zeros */
 
     int i , j ;
-    double value;
+    double value , d;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            matrix[i][j] = 0;
+        }
+    }
     for (i = 0; i < N; i++) {
         value =0;
         for (j = 0; j < N; j++){
             value += WeightedAdjacencyMatrix[i][j];
-            value = 1/ sqrt(value);
+            d = 1/ sqrt(value);
         }
-        matrix[i][i] = value;
+        matrix[i][i] = d;
     }
 }
 
@@ -62,6 +76,7 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
             matrix[i][j] = value;
         }
     }
+
 }
 
 
@@ -69,18 +84,20 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
     double Identity[N][N];
+    double **matrix1;
+
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
             if(i==j){
-                matrix[i][j] = 1;
+                Identity[i][j] = 1;
             }
             else{
-                matrix[i][j]=0;
+                Identity[i][j]=0;
             }
         }
     }
 
-    double **matrix1;
+
     matrix1 = malloc(sizeof(double *) * N);
     for (i = 0; i<N; i++) {
         matrix1[i] = (double *) malloc(sizeof(double *) * N);
@@ -101,26 +118,26 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 }
 
 
-
 void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     double max ;
-    int i,j;
-    int ii , jj;
-    int sign;
+    int i,j, ii , jj ,sign;
     double tita, s, c, t;
-    max =Amatrix[0][0];
+    max = absDouble(Amatrix[0][1]);
     ii =0;
-    jj =0;
+    jj =1;
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            if(i!=j && Amatrix[i][j]>max){
-                max= Amatrix[i][j];
+            if(i!=j && absDouble(Amatrix[i][j])>max){
+                max= absDouble(Amatrix[i][j]);
                 ii = i;
                 jj = j;
+
             }
         }
     }
-
+    if(Amatrix[ii][jj]< 0){
+        max = -max;
+    }
     tita = (Amatrix[jj][jj] - Amatrix[ii][ii])/(2*max);
     if(tita>=0){
         sign = 1;
@@ -147,10 +164,17 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     matrix[ii][ii] = c;
     matrix[jj][jj] = c;
 
-    /*check*/
-
     matrix[ii][jj] = s;
     matrix[jj][ii] = -s;
+}
+
+double absDouble(double d) {
+    if(d >= 0 ){
+        return d;
+    }
+    else{
+        return -d;
+    }
 }
 
 void Ptrans(int N, double **matrix , double **P){
@@ -529,28 +553,13 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
 
 }
 
-
-void print(double **matrix, int rows, int col) {
-    int i;
-    int j;
-    for(i=0;i<rows;i++){
-        for ( j = 0; j < col; j++) {
-            printf("%.4f",matrix[i][j]);
-            if(j<col-1){
-                printf(",");
-            }
-        }
-        printf("\n");
-    }
-}
-
 int kmeans(char filename[], int Goal) {
     int dimension = 0;
     int rows = 0;
-    int Temp =0;
-    int i, j ,column;
+    int Temp = 0;
+    int i, j, column;
     double **DataPoints;
-    double** WeightedAdjacencyMatrix, **DiagonalDegreeMatrix, **NormalizedGraphLaplacian ,**jacobi ,**Vectors  , **matrix;
+    double **WeightedAdjacencyMatrix, **DiagonalDegreeMatrix, **NormalizedGraphLaplacian, **jacobi, **Vectors, **matrix;
 
 
     Sizefile(filename, &dimension, &rows);
@@ -558,44 +567,46 @@ int kmeans(char filename[], int Goal) {
     for (i = 0; i < rows; i++) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
-    Getpoints(filename , rows , dimension , DataPoints);
+    Getpoints(filename, rows, dimension, DataPoints);
 
-    if (Temp != Goal){
-        Temp ++;
+
+    if (Temp != Goal) {
+        Temp++;
         WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             WeightedAdjacencyMatrix[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
-        if(Temp == Goal){
+        TheWeightedAdjacencyMatrix(rows, dimension, WeightedAdjacencyMatrix, DataPoints);
+
+        if (Temp == Goal) {
             column = rows;
-            print(WeightedAdjacencyMatrix , rows , column );
+            print(WeightedAdjacencyMatrix, rows, column);
             return 1;
         }
     }
-    if (Temp != Goal){
-        Temp ++;
+    if (Temp != Goal) {
+        Temp++;
         DiagonalDegreeMatrix = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             DiagonalDegreeMatrix[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
-        if(Temp == Goal){
+        TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+        if (Temp == Goal) {
             column = rows;
-            print(DiagonalDegreeMatrix , rows , column);
+            print(DiagonalDegreeMatrix, rows, column);
             return 1;
         }
     }
-    if (Temp != Goal){
-        Temp ++;
+    if (Temp != Goal) {
+        Temp++;
         NormalizedGraphLaplacian = malloc(sizeof(double *) * rows);
-        for (i = 0; i<rows; i++) {
+        for (i = 0; i < rows; i++) {
             NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
         }
-        TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
-        if(Temp == Goal){
+        TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+        if (Temp == Goal) {
             column = rows;
-            print(NormalizedGraphLaplacian , rows , column);
+            print(NormalizedGraphLaplacian, rows, column);
             return 1;
         }
     }
@@ -619,23 +630,21 @@ int kmeans(char filename[], int Goal) {
         for (i = 0; i < rows; i++) {
             matrix[0][i] = jacobi[i][i];
         }
-        for (i = 1; i < rows; i++) {
+        for (i = 0; i < rows; i++) {
             for (j = 0; j < rows; j++) {
-                matrix[i][j] = Vectors[i - 1][j];
+                matrix[i + 1][j] = Vectors[i][j];
             }
         }
         column = rows;
-        print(matrix , rows+1 , column);
+        print(matrix, rows + 1, column);
         return 1;
     }
 
     return 0;
-
 }
 
-
-/*int main(int argc, char** argv) {
-    if(argc != 2){
+int main(int argc, char** argv) {
+    if(argc != 3){
         printf("Invalid Input!");
         return 0;
     }
@@ -664,56 +673,6 @@ int kmeans(char filename[], int Goal) {
 
 
     return 0;
-}*/
-
-int main(){
-
-    /*char path[] = "C:\\Users\\weamm\\Documents\\example.txt";
-    kmeans(path , 1);*/
-    return 0;
-    /*double A[3][3] = {{3, 2, 4},
-                      {2, 0, 2},
-                      {4, 2, 3}};
-
-    double B[3][3] = {{1,0,0},
-                      {0,4/(3* sqrt(2)),1/3},
-                      {0,-1/3,4/(3* sqrt(2))}};
-
-    double**AP;
-    double**BP;
-    double **matrix;
-    double **matrixP;
-    double **TmatrixP;
-    int i ,j;
-
-    AP = malloc(sizeof(double *) * 3);
-    BP = malloc(sizeof(double *) * 3);
-    matrix = malloc(sizeof(double *) * 3);
-    matrixP = malloc(sizeof(double *) * 3);
-    TmatrixP = malloc(sizeof(double *) * 3);
-    for (i = 0; i<3; i++) {
-        AP[i] = (double *) malloc((3) * sizeof(double));
-        BP[i] = (double *) malloc((3) * sizeof(double));
-        matrix[i] = (double *) malloc((3) * sizeof(double));
-        matrixP[i] = (double *) malloc((3) * sizeof(double));
-        TmatrixP[i] = (double *) malloc((3) * sizeof(double));
-    }
-
-    for (i = 0; i < 3; i++) {
-        for (j = 0; j < 3; j++) {
-            AP[i][j] = A[i][j];
-            BP[i][j] = B[i][j];
-        }
-    }
-
-    Jacobi(3 ,matrix , matrixP, AP);
-
-
-    for( i=0 ; i<3 ; i++) {
-        printf("\n");
-        for (j = 0; j < 3; j++) {
-            printf("%f ,", matrix[i][j]);
-        }
-    }
-    return 1;*/
 }
+
+
