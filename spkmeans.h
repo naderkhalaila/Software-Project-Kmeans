@@ -45,5 +45,6 @@ void print(double **matrix, int rows, int col) ;
 
 int kmeans(char filename[], int Goal) ;
 
+double absDouble(double d);
 #endif //FINALPROJECT_SPKMEANS_H
 
