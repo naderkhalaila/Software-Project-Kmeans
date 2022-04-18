@@ -83,7 +83,6 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                              int goal , int Part){
 
     PyObject *array, *vec, *num;
-    PyObject *lst_centroids ;
     int dimension = dim;
     int rows = num_rows;
     int Goal = goal;
@@ -291,36 +290,36 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                         Py_DECREF(vec);
                         return NULL;
                     }PyList_SET_ITEM(vec, j, num);
-                }PyList_SET_ITEM(lst_centroids, i, vec);
+                }PyList_SET_ITEM(array, i, vec);
             }
 
             return array;
         }
     }
-    else{
+    else {
         centroids_list = parse_arrays(Py_centroids, k, dimension);
         sum_array = malloc(sizeof(double *) * k);
-        for (i = 0; i<k; i++) {
+        for (i = 0; i < k; i++) {
             sum_array[i] = (double *) malloc((dimension) * sizeof(double));
         }
 
         count_array = (int *) malloc(sizeof(int) * K);
 
         iter = 0;
-        while(delta==0 && iter < MAX_ITER) {
+        while (delta == 0 && iter < MAX_ITER) {
             Init(k, dimension, count_array, sum_array);
             clustering(k, rows, dimension, count_array, sum_array, DataPoints, centroids_list);
             delta = calculate_delta(k, dimension, centroids_list, sum_array);
             iter++;
         }
 
-        lst_centroids = PyList_New(k);
-        if (!lst_centroids){
+        array = PyList_New(k);
+        if (!array) {
             return NULL;
         }
-        for(i=0; i<k; i++){
+        for (i = 0; i < k; i++) {
             vec = PyList_New(dimension);
-            if (!vec){
+            if (!vec) {
                 return NULL;
             }
             for (j = 0; j < dimension; j++) {
@@ -328,23 +327,24 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 if (!num) {
                     Py_DECREF(vec);
                     return NULL;
-                }PyList_SET_ITEM(vec, j, num);
-            }PyList_SET_ITEM(lst_centroids, i, vec);
+                }
+                PyList_SET_ITEM(vec, j, num);
+            }
+            PyList_SET_ITEM(array, i, vec);
         }
 
-        for(i=0 ; i<K ; i++){
+        for (i = 0; i < K; i++) {
             free(centroids_list[i]);
             free((sum_array[i]));
         }
         free(centroids_list);
-        for(i=0 ; i<rows ; i++){
+        for (i = 0; i < rows; i++) {
             free(DataPoints[i]);
         }
         free(DataPoints);
         free(sum_array);
         free(count_array);
-
-        return lst_centroids;
     }
+    return array;
 }
 
