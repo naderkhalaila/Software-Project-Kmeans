@@ -82,7 +82,8 @@ PyInit_mykmeanssp(void) {
 static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_rows, int dim, int K, int MAX_ITER,
                              int goal , int Part){
 
-    PyObject *array, *vec, *num ,*lst_centroids ;
+    PyObject *array, *vec, *num;
+    PyObject *lst_centroids ;
     int dimension = dim;
     int rows = num_rows;
     int Goal = goal;
@@ -276,7 +277,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
 
             array = PyList_New(rows+1);
-            if (!lst_centroids){
+            if (!array){
                 return NULL;
             }
             for(i=0; i<rows+1; i++){
@@ -292,7 +293,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(vec, j, num);
                 }PyList_SET_ITEM(lst_centroids, i, vec);
             }
-            
+
             return array;
         }
     }
