@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <Python.h>
 #define PY_SSIZE_T_CLEANS
 #include <malloc.h>
-#include <string.h>
 
 double absDouble(double d);
 
@@ -28,7 +28,7 @@ void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double *
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++){
             if(j == i){
-                matrix[i][j] = 0;
+                matrix[i][i] = 0;
                 continue;
             }
 
@@ -83,13 +83,8 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
 void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegreeMatrix ,
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
-    double **Identity;
+    double Identity[N][N];
     double **matrix1;
-
-    Identity = malloc(sizeof(double *) * N);
-    for (i = 0; i<N; i++) {
-        Identity[i] = (double *) malloc(sizeof(double *) * N);
-    }
 
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
@@ -213,7 +208,7 @@ double convergence(int N, double **matrix1 , double **matrix2){
 
 
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
-    double eps = 1.0 * exp(-5);
+    double eps = 1.0 * exp(-15);
     int Max_Iter = 100;
     double conv ;
     int iter =0;
@@ -312,13 +307,17 @@ void swap(double *xp, double *yp)
 void selectionSort(int N , double *arr)
 {
     int i, j, min_idx;
+
+    // One by one move boundary of unsorted subarray
     for (i = 0; i < N-1; i++)
     {
+        // Find the minimum element in unsorted array
         min_idx = i;
         for (j = i+1; j < N; j++)
             if (arr[j] < arr[min_idx])
                 min_idx = j;
 
+        // Swap the found minimum element with the first element
         swap(&arr[min_idx], &arr[i]);
     }
 }
@@ -326,11 +325,10 @@ void selectionSort(int N , double *arr)
 int Eigengap(int N ,double *eigenvalues){
     int k =0;
     int i;
-    double *arr;
+    double arr[N];
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
-    arr = malloc(sizeof(double *) * N);
-
     arr[0]= max;
+
     selectionSort(N, eigenvalues);
 
     for( i=1 ; i< floor(N/2) ; i++){
@@ -348,7 +346,6 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
-    int sum;
 
     eign = malloc(sizeof(double *) * N);
 
@@ -380,6 +377,9 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
 
         k = Eigengap(N, eign);
+        for (i = 0; i < N; i++) {
+            t[i] = (double *) malloc(sizeof(double *) * k);
+        }
     }
 
     U = malloc(sizeof(double *) * k);
@@ -395,7 +395,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
-
+    int sum;
     for(i = 0 ; i<N ; i++){
         sum = 0;
         for(j = 0 ; j<k ; j++){
@@ -518,7 +518,7 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
     int negative;
     int p = 1;
     int i, j;
-    double num=0, fr=0 ,tmp=0 ;
+    double num, fr ,tmp;
     FILE *file;
     char C;
 
@@ -677,3 +677,5 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+
