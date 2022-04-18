@@ -129,7 +129,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(array, i, vec);
                 }
 
-                return kmatrix;
+                return array;
             }
 
             if (K != 0) {
@@ -274,7 +274,26 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     matrix[i][j] = Vectors[i-1][j];
                 }
             }
-            return matrix;
+
+            array = PyList_New(rows+1);
+            if (!lst_centroids){
+                return NULL;
+            }
+            for(i=0; i<rows+1; i++){
+                vec = PyList_New(rows);
+                if (!vec){
+                    return NULL;
+                }
+                for (j = 0; j < rows; j++) {
+                    num = PyFloat_FromDouble(matrix[i][j]);
+                    if (!num) {
+                        Py_DECREF(vec);
+                        return NULL;
+                    }PyList_SET_ITEM(vec, j, num);
+                }PyList_SET_ITEM(lst_centroids, i, vec);
+            }
+            
+            return array;
         }
     }
     else{
