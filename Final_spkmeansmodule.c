@@ -54,7 +54,7 @@ static PyMethodDef capiMethods[] = {
         {"fit",
                 (PyCFunction) kmeans_capi,
                      METH_VARARGS,
-                PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -82,12 +82,13 @@ PyInit_mykmeanssp(void) {
 static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_rows, int dim, int K, int MAX_ITER,
                              int goal , int Part){
 
-    PyObject *array, *vec, *num ,*lst_centroids ;
+    PyObject *lst_centroids, *vec, *num;
     int dimension = dim;
     int rows = num_rows;
     int Goal = goal;
-    int i, j;
-    double ** centroids_list, **sum_array, **DataPoints;
+    int i, j ;
+    int K=K;
+    double ** centroids_list, **sum_array, **DataPoints,**kmatrix;
     int *count_array;
     int delta = 0;
     int iter;
@@ -100,8 +101,26 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
     if (Part == 0){
         if (Goal == 1) {
-            Goal = 5;
-        }
+
+            t = malloc(sizeof(double *) * rows);
+            for (i = 0; i<rows; i++) {
+                t[i] = (double *) malloc(sizeof(double *) * K);
+            }
+            if(K==0){
+                K = NormalizedSpectralClustering(rows , K , dimension , DataPoints , t);
+                kmatrix = malloc(sizeof(double *) * 1);
+                for (i = 0; i<1; i++) {
+                    kmatrix[i] = (double *) malloc(sizeof(double *) * 1);
+                }
+                kmatrix[0][0] = K;
+                return kmatrix;
+            }
+
+            if (K!=0) {
+                K = NormalizedSpectralClustering(rows , K , dimension , DataPoints , t);
+                return t;
+            }
+
         if (Temp != Goal){
             Temp ++;
             WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
@@ -110,26 +129,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
             if(Temp == Goal){
-
-                array = PyList_New(rows);
-                if (!array){
-                    return NULL;
-                }
-                for(i=0; i<rows; i++){
-                    vec = PyList_New(rows);
-                    if (!vec){
-                        return NULL;
-                    }
-                    for (j = 0; j < rows; j++) {
-                        num = PyFloat_FromDouble(WeightedAdjacencyMatrix[i][j]);
-                        if (!num) {
-                            Py_DECREF(vec);
-                            return NULL;
-                        }PyList_SET_ITEM(vec, j, num);
-                    }PyList_SET_ITEM(array, i, vec);
-                }
-
-                return array;
+                return WeightedAdjacencyMatrix;
             }
         }
         if (Temp != Goal){
@@ -140,25 +140,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
             if(Temp == Goal){
-
-                array = PyList_New(rows);
-                if (!array){
-                    return NULL;
-                }
-                for(i=0; i<rows; i++){
-                    vec = PyList_New(rows);
-                    if (!vec){
-                        return NULL;
-                    }
-                    for (j = 0; j < rows; j++) {
-                        num = PyFloat_FromDouble(DiagonalDegreeMatrix[i][j]);
-                        if (!num) {
-                            Py_DECREF(vec);
-                            return NULL;
-                        }PyList_SET_ITEM(vec, j, num);
-                    }PyList_SET_ITEM(array, i, vec);
-                }
-                return array;
+                return DiagonalDegreeMatrix;
             }
         }
         if (Temp != Goal){
@@ -169,32 +151,12 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
             if(Temp == Goal){
-
-                array = PyList_New(rows);
-                if (!array){
-                    return NULL;
-                }
-                for(i=0; i<rows; i++){
-                    vec = PyList_New(rows);
-                    if (!vec){
-                        return NULL;
-                    }
-                    for (j = 0; j < rows; j++) {
-                        num = PyFloat_FromDouble(NormalizedGraphLaplacian[i][j]);
-                        if (!num) {
-                            Py_DECREF(vec);
-                            return NULL;
-                        }PyList_SET_ITEM(vec, j, num);
-                    }PyList_SET_ITEM(array, i, vec);
-                }
-
-                return array;
+                return NormalizedGraphLaplacian;
             }
         }
 
         if (Temp != Goal){
             Temp ++;
-
             jacobi = malloc(sizeof(double *) * rows);
             Vectors = malloc(sizeof(double *) * rows);
             for (i = 0; i<rows; i++) {
@@ -217,30 +179,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     matrix[i][j] = Vectors[i-1][j];
                 }
             }
-
-            array = PyList_New(rows+1);
-            if (!array){
-                return NULL;
-            }
-            for(i=0; i<rows+1; i++){
-                vec = PyList_New(rows);
-                if (!vec){
-                    return NULL;
-                }
-                for (j = 0; j < rows; j++) {
-                    num = PyFloat_FromDouble(matrix[i][j]);
-                    if (!num) {
-                        Py_DECREF(vec);
-                        return NULL;
-                    }PyList_SET_ITEM(vec, j, num);
-                }PyList_SET_ITEM(array, i, vec);
-            }
-
-            return array;
+            return matrix;
         }
     }
     else{
+
         centroids_list = parse_arrays(Py_centroids, K, dimension);
+
         sum_array = malloc(sizeof(double *) * K);
         for (i = 0; i<K; i++) {
             sum_array[i] = (double *) malloc((dimension) * sizeof(double));
@@ -251,7 +196,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         iter = 0;
         while(delta==0 && iter < MAX_ITER) {
             Init(K, dimension, count_array, sum_array);
-            clustering(K, rows, dimension, count_array, sum_array, DataPoints, centroids_list);
+            clustering(K, rows, dimension, count_array, sum_array, t , centroids_list);
             delta = calculate_delta(K, dimension, centroids_list, sum_array);
             iter++;
         }
@@ -286,9 +231,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         free(sum_array);
         free(count_array);
 
-
+        return lst_centroids;
     }
-    return lst_centroids;
-
 }
 
