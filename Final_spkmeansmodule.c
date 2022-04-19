@@ -137,7 +137,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     t[i] = (double *) malloc(sizeof(double *) * k);
                 }
 
-                k = NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
+                NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
 
                 array = PyList_New(rows);
                 if (!array){
@@ -297,12 +297,12 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         }
     }
     else {
+
         centroids_list = parse_arrays(Py_centroids, k, dimension);
         sum_array = malloc(sizeof(double *) * k);
         for (i = 0; i < k; i++) {
             sum_array[i] = (double *) malloc((dimension) * sizeof(double));
         }
-
         count_array = (int *) malloc(sizeof(int) * K);
 
         iter = 0;
