@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import mykmeanssp
 import argparse
-import sys
+
 
 
 def dist(point1, point2):
@@ -14,26 +14,22 @@ def dist(point1, point2):
     return sum
 
 
-def kmeansPlus(k, goal, filename):
+def KmeansPlus(k, goal, filename):
     DataPoints = ReadData(k, filename)
-    Data_indices = DataPoints.iloc[:, :1]
-    Data_indices = Data_indices.to_numpy()
-    Data_indices = np.array(Data_indices)
-
-    # DataPoints = DataPoints.iloc[:, 1:]
     DataPoints = DataPoints.to_numpy()
     DataPoints = np.array(DataPoints)
 
     rows = DataPoints.shape[0]
     dimension = DataPoints.shape[1]
-    if (goal != "spk"):
-        if (goal == "wam"):
+
+    if goal != "spk":
+        if goal == "wam":
             goal = 2
-        if (goal == "ddg"):
+        if goal == "ddg":
             goal = 3
-        if (goal == "lnorm"):
+        if goal == "lnorm":
             goal = 4
-        if (goal == "jacobi"):
+        if goal == "jacobi":
             goal = 5
         Data_list = DataPoints.tolist()
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
@@ -50,11 +46,11 @@ def kmeansPlus(k, goal, filename):
             return -1
 
         Data_list = DataPoints.tolist()
-        if(K==0):
+        if K==0:
             matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
             matrix = np.array(matrix)
             matrix = np.round(matrix, decimals=4)
-            K = matrix[0][0]
+            K = int(matrix[0][0])
 
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, K, 300, goal, 0)
         matrix = np.array(matrix)
@@ -71,7 +67,6 @@ def kmeansPlus(k, goal, filename):
         print_points(centroids)
         print()
         return
-    return
 
 
 def print_points(centroids):
@@ -88,8 +83,8 @@ def print_points(centroids):
 
 
 def ReadData(k, filename):
-    DataPoints = pd.read_csv(filename, header=None)
-    return DataPoints
+    dataPoints = pd.read_csv(filename, header=None)
+    return dataPoints
 
 
 def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
@@ -102,23 +97,23 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
     centroids_index[0] = mew
     centroids[0] = DataPoints[mew]
 
-    Z = 1
-    while Z < k:
+    z = 1
+    while z < k:
         for i in range(0, rows):
-            min = float("inf")
-            for j in range(0, Z):
+            minimum = float("inf")
+            for j in range(0, z):
                 distance = dist(DataPoints[i], centroids[j])
-                if (distance < min):
-                    min = distance
+                if distance < minimum:
+                    minimum = distance
             sum1 -= D[i]
             D[i] = min
             sum1 += D[i]
 
         P = np.divide(D, sum1)
         index1 = np.random.choice(rows, p=P)
-        centroids_index[Z] = index1
-        centroids[Z] = DataPoints[index1]
-        Z += 1
+        centroids_index[z] = index1
+        centroids[z] = DataPoints[index1]
+        z += 1
     print(','.join(str(i) for i in centroids_index), flush=True)
 
 
@@ -128,25 +123,25 @@ def start():  # gets arguments and starts the algorithm.
     parser.add_argument("goal", type=str, help="The goal which is need to calculate")
     parser.add_argument("file_name", type=str, help="The path to file which contains N observations")
     args = parser.parse_args()
-    K = args.K
+    k = args.K
     goal = args.goal
     file_name = args.file_name
     # assertions
 
-    if K == None:
+    if k is None:
         print("Invalid Input!")
         return -1
-    if (K < 0):
+    if k < 0:
         print("Invalid Input!")
         return -1
     goals = ["wam", "ddg", "lnorm", "spk", "jacobi"]
-    if (goal not in goals):
+    if goal not in goals:
         print("Invalid Input!")
         return -1
-    if (file_name) == None:
+    if file_name is None:
         print("Invalid Input!")
         return -1
-    kmeansPlus(K, goal, file_name)
+    KmeansPlus(k, goal, file_name)
 
 
 start()
