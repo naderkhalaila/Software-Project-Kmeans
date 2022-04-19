@@ -330,13 +330,12 @@ int Eigengap(int N ,double *eigenvalues){
     selectionSort(N, eigenvalues);
 
     for( i=1 ; i< floor(N/2) ; i++){
-        arr[i] = (eigenvalues[i] - eigenvalues[i+1]);
+        arr[i] = fabs(eigenvalues[i] - eigenvalues[i+1]);
         if(arr[i]>max){
             max=arr[i];
             k=i;
         }
     }
-
     return k;
 }
 
@@ -344,6 +343,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
+    double sum;
+    //int sum1=0;
 
     eign = malloc(sizeof(double *) * N);
 
@@ -393,7 +394,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
-    int sum;
+
     for(i = 0 ; i<N ; i++){
         sum = 0;
         for(j = 0 ; j<k ; j++){
@@ -404,6 +405,10 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             t[i][j] = U[i][j]/sum;
         }
     }
+
+
+
+
     return k;
 
 }
