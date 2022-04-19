@@ -297,15 +297,13 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
     }
 }
 
-void swap(double *xp, double *yp)
-{
+void swap(double *xp, double *yp){
     double temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
 
-void selectionSort(int N , double *arr)
-{
+void selectionSort(int N , double *arr){
     int i, j, min_idx;
 
     // One by one move boundary of unsorted subarray
@@ -382,15 +380,15 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
-    U = malloc(sizeof(double *) * k);
-    for (i = 0; i<k; i++) {
-        U[i] = malloc(sizeof(double *) * N);
+    U = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        U[i] = malloc(sizeof(double *) * k);
     }
 
 
 
-    for (i = 0; i<k; i++) {
-        for (j = 0 ; j<N ; j++){
+    for (i = 0; i<N; i++) {
+        for (j = 0 ; j<k ; j++){
             U[i][j] = eigenvectors[i][j];
         }
     }
@@ -487,7 +485,6 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
     return bol;
 }
 
-
 void Sizefile(char *filename, int *dimension, int *rows) {
     int tmp_dimension;
     int tmp_rows;
@@ -513,14 +510,14 @@ void Sizefile(char *filename, int *dimension, int *rows) {
     *rows = tmp_rows;
 }
 
-
 void Getpoints(char filename[] , int rows , int dimension , double **DataPoints){
     int negative;
     int p = 1;
     int i, j;
-    double num, fr ,tmp;
+    double  fr ,tmp;
     FILE *file;
     char C;
+    double num = 0 ;
 
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
