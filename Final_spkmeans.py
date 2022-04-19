@@ -34,7 +34,7 @@ def KmeansPlus(k, goal, filename):
         Data_list = DataPoints.tolist()
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
         matrix = np.array(matrix)
-        matrix = np.round(matrix, decimals=4)
+        matrix = np.round(matrix, decimals=3)
         print_points(matrix)
         print()
         return
@@ -49,12 +49,12 @@ def KmeansPlus(k, goal, filename):
         if K==0:
             matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
             matrix = np.array(matrix)
-            matrix = np.round(matrix, decimals=4)
+            matrix = np.round(matrix, decimals=3)
             K = int(matrix[0][0])
 
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, K, 300, goal, 0)
         matrix = np.array(matrix)
-        matrix = np.round(matrix, decimals=4)
+        matrix = np.round(matrix, decimals=3)
 
         centroids = np.ndarray((K, K), float)
         centroids_index = np.ndarray(K, int)
@@ -63,7 +63,7 @@ def KmeansPlus(k, goal, filename):
         centroids_list = centroids.tolist()
         centroids = mykmeanssp.fit(matrix, centroids_list, rows, K, K, 300, goal, 1)
         centroids = np.array(centroids)
-        centroids = np.round(centroids, decimals=4)
+        centroids = np.round(centroids, decimals=3)
         print_points(centroids)
         print()
         return
