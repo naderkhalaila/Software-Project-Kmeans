@@ -83,9 +83,12 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
 void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegreeMatrix ,
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
-    double Identity[N][N];
-    double **matrix1;
+    double **matrix1 , **Identity;
 
+    Identity = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        Identity[i] = (double *) malloc(sizeof(double *) * N);
+    }
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
             if(i==j){
@@ -113,8 +116,10 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 
     for (i=0 ; i<N ; i++){
         free(matrix1[i]);
+        free(Identity[i]);
     }
     free(matrix1);
+    free(Identity);
 }
 
 
@@ -207,94 +212,112 @@ double convergence(int N, double **matrix1 , double **matrix2){
 }
 
 
-void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
+void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     double eps = 1.0 * exp(-15);
     int Max_Iter = 100;
-    double conv ;
-    int iter =0;
-    int i , j;
+    double conv;
+    int iter = 0;
+    int i, j;
 
-    double **matrixP ,**TmatrixP , **A , **A_tag , **temp;
+    double **matrixP, **TmatrixP, **A, **A_tag, **temp;
 
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
-    for (i = 0; i<N; i++) {
+    for (i = 0; i < N; i++) {
         matrixP[i] = (double *) malloc((N) * sizeof(double));
         TmatrixP[i] = (double *) malloc((N) * sizeof(double));
     }
 
-    CreatePmatrix(N ,matrixP , Lmatrix);
-    Ptrans(N , TmatrixP , matrixP);
+    CreatePmatrix(N, matrixP, Lmatrix);
+    Ptrans(N, TmatrixP, matrixP);
 
     A = malloc(sizeof(double *) * N);
     A_tag = malloc(sizeof(double *) * N);
     temp = malloc(sizeof(double *) * N);
-    for (i = 0; i<N; i++) {
+    for (i = 0; i < N; i++) {
         A[i] = (double *) malloc((N) * sizeof(double));
         A_tag[i] = (double *) malloc((N) * sizeof(double));
         temp[i] = (double *) malloc((N) * sizeof(double));
     }
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             A[i][j] = Lmatrix[i][j];
         }
     }
 
-    MatrixMultiplication(N,temp , TmatrixP , A);
-    MatrixMultiplication(N ,A_tag , temp , matrixP);
+    MatrixMultiplication(N, temp, TmatrixP, A);
+    MatrixMultiplication(N, A_tag, temp, matrixP);
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             Vectors[i][j] = matrixP[i][j];
         }
     }
 
-    conv = convergence(N ,A, A_tag);
-    if(conv <= eps){
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+    conv = convergence(N, A, A_tag);
+    if (conv <= eps) {
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 matrix[i][j] = A_tag[i][j];
             }
         }
     }
 
-    while(conv > eps && iter < Max_Iter){
+    while (conv > eps && iter < Max_Iter) {
 
         double **V;
         V = malloc(sizeof(double *) * N);
-        for (i = 0; i<N; i++) {
+        for (i = 0; i < N; i++) {
             V[i] = (double *) malloc((N) * sizeof(double));
         }
 
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 A[i][j] = A_tag[i][j];
             }
         }
 
-        CreatePmatrix(N,matrixP, A);
-        Ptrans(N ,TmatrixP , matrixP);
+        CreatePmatrix(N, matrixP, A);
+        Ptrans(N, TmatrixP, matrixP);
 
-        MatrixMultiplication(N ,V , Vectors , matrixP);
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+        MatrixMultiplication(N, V, Vectors, matrixP);
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 Vectors[i][j] = V[i][j];
             }
         }
 
-        MatrixMultiplication(N, temp , TmatrixP , A);
-        MatrixMultiplication(N, A_tag , temp , matrixP);
+        for(i=0 ; i <N ; i++){
+            free(V[i]);
+        }
+        free(V);
+
+        MatrixMultiplication(N, temp, TmatrixP, A);
+        MatrixMultiplication(N, A_tag, temp, matrixP);
 
         conv = convergence(N, A, A_tag);
         iter++;
     }
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             matrix[i][j] = A_tag[i][j];
         }
     }
+    for (i = 0; i < N; i++) {
+        free(matrixP[i]);
+        free(A[i]);
+        free(temp[i]);
+        free(A_tag[i]);
+        free(TmatrixP[i]);
+    }
+
+    free(matrixP);
+    free(A);
+    free(temp);
+    free(A_tag);
+    free(TmatrixP);
 }
 
 void swap(double *xp, double *yp){
@@ -406,8 +429,21 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
-
-
+    for (i=0; i < N; i++){
+        free(eigenvalues[i]);
+        free(eigenvectors[i]);
+        free(NormalizedGraphLaplacian[i]);
+        free(DiagonalDegreeMatrix[i]);
+        free(WeightedAdjacencyMatrix[i]);
+        free(U[i]);
+    }
+    free(eigenvalues);
+    free(eigenvectors);
+    free(NormalizedGraphLaplacian);
+    free(DiagonalDegreeMatrix);
+    free(WeightedAdjacencyMatrix);
+    free(U);
+    free(eign);
 
     return k;
 
@@ -583,9 +619,20 @@ int kmeans(char filename[], int Goal) {
         }
         TheWeightedAdjacencyMatrix(rows, dimension, WeightedAdjacencyMatrix, DataPoints);
 
+        for (i=0; i < rows; i++){
+            free(DataPoints[i]);
+        }
+        free(DataPoints);
+
         if (Temp == Goal) {
             column = rows;
             print(WeightedAdjacencyMatrix, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(WeightedAdjacencyMatrix[i]);
+            }
+            free(WeightedAdjacencyMatrix);
+
             return 1;
         }
     }
@@ -599,6 +646,14 @@ int kmeans(char filename[], int Goal) {
         if (Temp == Goal) {
             column = rows;
             print(DiagonalDegreeMatrix, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(DiagonalDegreeMatrix[i]);
+                free(WeightedAdjacencyMatrix[i]);
+            }
+            free(DiagonalDegreeMatrix);
+            free(WeightedAdjacencyMatrix);
+
             return 1;
         }
     }
@@ -609,13 +664,26 @@ int kmeans(char filename[], int Goal) {
             NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
         }
         TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+
+        for (i=0; i < rows; i++){
+            free(DiagonalDegreeMatrix[i]);
+            free(WeightedAdjacencyMatrix[i]);
+        }
+        free(DiagonalDegreeMatrix);
+        free(WeightedAdjacencyMatrix);
+
         if (Temp == Goal) {
             column = rows;
             print(NormalizedGraphLaplacian, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(NormalizedGraphLaplacian[i]);
+            }
+            free(NormalizedGraphLaplacian);
+
             return 1;
         }
     }
-
     if (Temp != Goal) {
         Temp++;
         jacobi = malloc(sizeof(double *) * rows);
@@ -642,6 +710,19 @@ int kmeans(char filename[], int Goal) {
         }
         column = rows;
         print(matrix, rows + 1, column);
+
+        for (i=0; i < rows; i++){
+            free(jacobi[i]);
+            free(Vectors[i]);
+            free(NormalizedGraphLaplacian[i]);
+            free(matrix[i]);
+        }
+        free(matrix[rows]);
+        free(matrix);
+        free(jacobi);
+        free(Vectors);
+        free(NormalizedGraphLaplacian);
+        
         return 1;
     }
 
