@@ -53,8 +53,8 @@ static PyMethodDef capiMethods[] = {
 
         {"fit",
                 (PyCFunction) kmeans_capi,
-                     METH_VARARGS,
-                PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                METH_VARARGS,
+                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -129,6 +129,15 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(array, i, vec);
                 }
 
+                for (i=0; i < rows; i++){
+                    free(DataPoints[i]);
+                    free(t[i]);
+                }
+                free(DataPoints);
+                free(t);
+                free(kmatrix[0]);
+                free(kmatrix);
+
                 return array;
             }
 
@@ -157,6 +166,14 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                         }PyList_SET_ITEM(vec, j, num);
                     }PyList_SET_ITEM(array, i, vec);
                 }
+
+                for (i=0; i < rows; i++){
+                    free(DataPoints[i]);
+                    free(t[i]);
+                }
+                free(DataPoints);
+                free(t);
+
                 return array;
             }
         }
@@ -167,6 +184,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 WeightedAdjacencyMatrix[i] = (double *) malloc(sizeof(double *) * rows);
             }
             TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
+
+            for (i=0; i < rows; i++){
+                free(DataPoints[i]);
+            }
+            free(DataPoints);
+
+
             if(Temp == Goal){
 
                 array = PyList_New(rows);
@@ -186,6 +210,11 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                         }PyList_SET_ITEM(vec, j, num);
                     }PyList_SET_ITEM(array, i, vec);
                 }
+
+                for (i=0; i < rows; i++){
+                    free(WeightedAdjacencyMatrix[i]);
+                }
+                free(WeightedAdjacencyMatrix);
 
                 return array;
             }
@@ -217,6 +246,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(array, i, vec);
                 }
 
+                for (i=0; i < rows; i++){
+                    free(DiagonalDegreeMatrix[i]);
+                    free(WeightedAdjacencyMatrix[i]);
+                }
+                free(DiagonalDegreeMatrix);
+                free(WeightedAdjacencyMatrix);
+
                 return array;
             }
         }
@@ -227,6 +263,15 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
             }
             TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
+
+            for (i=0; i < rows; i++){
+                free(DiagonalDegreeMatrix[i]);
+                free(WeightedAdjacencyMatrix[i]);
+            }
+            free(DiagonalDegreeMatrix);
+            free(WeightedAdjacencyMatrix);
+
+
             if(Temp == Goal){
 
                 array = PyList_New(rows);
@@ -247,6 +292,10 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(array, i, vec);
                 }
 
+                for (i=0; i < rows; i++){
+                    free(NormalizedGraphLaplacian[i]);
+                }
+                free(NormalizedGraphLaplacian);
                 return array;
             }
         }
@@ -293,6 +342,18 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                     }PyList_SET_ITEM(vec, j, num);
                 }PyList_SET_ITEM(array, i, vec);
             }
+
+            for (i=0; i < rows; i++){
+                free(jacobi[i]);
+                free(Vectors[i]);
+                free(NormalizedGraphLaplacian[i]);
+                free(matrix[i]);
+            }
+            free(matrix[rows]);
+            free(matrix);
+            free(jacobi);
+            free(Vectors);
+            free(NormalizedGraphLaplacian);
 
             return array;
         }
