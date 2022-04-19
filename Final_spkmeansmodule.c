@@ -54,7 +54,7 @@ static PyMethodDef capiMethods[] = {
         {"fit",
                 (PyCFunction) kmeans_capi,
                      METH_VARARGS,
-                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -138,6 +138,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 }
 
                 NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
+
 
                 array = PyList_New(rows);
                 if (!array){
@@ -266,12 +267,12 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
             Jacobi(rows, jacobi , Vectors ,NormalizedGraphLaplacian);
 
-            for (i = 0 ; i < rows+1 ; i++){
+            for (i = 0; i < rows; i++) {
                 matrix[0][i] = jacobi[i][i];
             }
-            for (i =1 ; i < rows ; i++){
-                for(j = 0 ; j < rows ; j++){
-                    matrix[i][j] = Vectors[i-1][j];
+            for (i = 0; i < rows; i++) {
+                for (j = 0; j < rows; j++) {
+                    matrix[i + 1][j] = Vectors[i][j];
                 }
             }
 
