@@ -97,23 +97,23 @@ def init_Centroids(DataPoints, centroids, centroids_index, k, dimension, rows):
     centroids_index[0] = mew
     centroids[0] = DataPoints[mew]
 
-    z = 1
-    while z < k:
+    Z = 1
+    while Z < k:
         for i in range(0, rows):
-            minimum = float("inf")
-            for j in range(0, z):
+            min = float("inf")
+            for j in range(0, Z):
                 distance = dist(DataPoints[i], centroids[j])
-                if distance < minimum:
-                    minimum = distance
+                if (distance < min):
+                    min = distance
             sum1 -= D[i]
             D[i] = min
             sum1 += D[i]
 
         P = np.divide(D, sum1)
         index1 = np.random.choice(rows, p=P)
-        centroids_index[z] = index1
-        centroids[z] = DataPoints[index1]
-        z += 1
+        centroids_index[Z] = index1
+        centroids[Z] = DataPoints[index1]
+        Z += 1
     print(','.join(str(i) for i in centroids_index), flush=True)
 
 
