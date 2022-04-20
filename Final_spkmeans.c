@@ -320,28 +320,88 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     free(TmatrixP);
 }
 
-void swap(double *xp, double *yp){
-    double temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
+void insertionSort(int n, double * arr)
+{
+    int i, j;
+    double key;
 
-void selectionSort(int N , double *arr){
-    int i, j, min_idx;
+    for (i = 1; i < n; i++) {
 
-    // One by one move boundary of unsorted subarray
-    for (i = 0; i < N-1; i++)
-    {
-        // Find the minimum element in unsorted array
-        min_idx = i;
-        for (j = i+1; j < N; j++)
-            if (arr[j] < arr[min_idx])
-                min_idx = j;
+        key = arr[i];
+        j = i - 1;
 
-        // Swap the found minimum element with the first element
-        swap(&arr[min_idx], &arr[i]);
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
     }
 }
+
+void LnormSort(int n, double * arr , int *index)
+{
+    int i, j;
+    double key;
+
+    for (i = 1; i < n; i++) {
+
+        key = arr[i];
+        j = i - 1;
+
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            index[j + 1] = index[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+        index[j + 1] = index[i];
+    }
+}
+
+
+/*void sortLnorm(int n, double * arr , int * index){
+    int i, j, k, ind, last , bol;
+    double minimum= arr[0];
+    ind = 0;
+    last= 1;
+
+    for (i=0; i < n ; i++){
+        if(arr[i] < minimum)
+            minimum= arr[i];
+            ind = i;
+    }
+
+    index[0]= ind;
+    for (i=1; i < n ; i++){
+
+        for (j=0; j < n ; j++){
+            bol = 1;
+            for (k=0 ; k<last ; k++){
+                if(j == index[k])
+                    bol = 0 ;
+                    break;
+            }
+
+            if(bol ==0 )
+                continue;
+            else{
+                ind = j;
+                minimum = arr[j];
+                break;
+            }
+        }
+
+        if(j == n-1 && bol ==0 )
+            break;
+        else{
+            for (j=0; j < n ; j++){
+                for (k=0 ; k<last ; k++){
+                    if()
+                }
+        }
+    }
+}*/
+
 
 int Eigengap(int N ,double *eigenvalues){
     int k =0;
@@ -350,24 +410,24 @@ int Eigengap(int N ,double *eigenvalues){
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
     arr[0]= max;
 
-    selectionSort(N, eigenvalues);
+    insertionSort(N, eigenvalues);
 
     for( i=1 ; i< floor(N/2) ; i++){
         arr[i] = fabs(eigenvalues[i] - eigenvalues[i+1]);
-        if(arr[i]>max){
+        if(arr[i]>=max){
             max=arr[i];
             k=i;
         }
     }
-    return k;
+    return k+1;
 }
 
 int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoints ,  double** t){
-    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U;
+    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,**sortedL,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
     double sum;
-    //int sum1=0;
+    int * index;
 
     eign = malloc(sizeof(double *) * N);
 
@@ -404,19 +464,34 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
+    index =  malloc(sizeof(int *) * N);
+    for (i = 0; i < N; i++) {
+        eign[i] = eigenvalues[i][i];
+        index[i] = i;
+    }
+
+    LnormSort(N, eign, index);
+    sortedL = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        sortedL[i] = malloc(sizeof(double *) * N);
+    }
+    for (i = 0 ; i < N ; i++){
+        for (j = 0 ; j<N ; j++){
+            sortedL[i][j] = eigenvectors[index[i]][j] ;
+        }
+    }
+
+
     U = malloc(sizeof(double *) * N);
     for (i = 0; i<N; i++) {
         U[i] = malloc(sizeof(double *) * k);
     }
 
-
-
     for (i = 0; i<N; i++) {
         for (j = 0 ; j<k ; j++){
-            U[i][j] = eigenvectors[i][j];
+            U[i][j] = sortedL[i][j];
         }
     }
-
 
     for(i = 0 ; i<N ; i++){
         sum = 0;
@@ -436,7 +511,10 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         free(DiagonalDegreeMatrix[i]);
         free(WeightedAdjacencyMatrix[i]);
         free(U[i]);
+        free(sortedL[i]);
     }
+    free(sortedL);
+    free(index);
     free(eigenvalues);
     free(eigenvectors);
     free(NormalizedGraphLaplacian);
@@ -722,7 +800,7 @@ int kmeans(char filename[], int Goal) {
         free(jacobi);
         free(Vectors);
         free(NormalizedGraphLaplacian);
-        
+
         return 1;
     }
 
