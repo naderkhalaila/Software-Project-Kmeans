@@ -13,6 +13,10 @@ def dist(point1, point2):
 
     return sum
 
+def printMatrix(matrix):
+    for i in range(len(matrix)):
+        print(','.join([format(matrix[i][j], ".4f") for j in range(len(matrix[i]))]))
+
 
 def KmeansPlus(k, goal, filename):
     DataPoints = ReadData(k, filename)
@@ -34,14 +38,13 @@ def KmeansPlus(k, goal, filename):
         Data_list = DataPoints.tolist()
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
         matrix = np.array(matrix)
-        matrix = np.round(matrix, decimals=3)
-        print_points(matrix)
-        print()
+
+        printMatrix(matrix)
         return
     else:
         K=k
         goal = 1
-        if (k >= rows):
+        if (k > rows):
             print("Invalid Input!")
             return -1
 
@@ -49,12 +52,10 @@ def KmeansPlus(k, goal, filename):
         if K==0:
             matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
             matrix = np.array(matrix)
-            matrix = np.round(matrix, decimals=3)
             K = int(matrix[0][0])
 
         matrix = mykmeanssp.fit(Data_list, None, rows, dimension, K, 300, goal, 0)
         matrix = np.array(matrix)
-        matrix = np.round(matrix, decimals=3)
 
         centroids = np.ndarray((K, K), float)
         centroids_index = np.ndarray(K, int)
@@ -63,8 +64,8 @@ def KmeansPlus(k, goal, filename):
         centroids_list = centroids.tolist()
         centroids = mykmeanssp.fit(matrix, centroids_list, rows, K, K, 300, goal, 1)
         centroids = np.array(centroids)
-        centroids = np.round(centroids, decimals=3)
-        print_points(centroids)
+
+        printMatrix(centroids)
         print()
         return
 
