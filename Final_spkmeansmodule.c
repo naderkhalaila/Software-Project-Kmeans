@@ -53,8 +53,8 @@ static PyMethodDef capiMethods[] = {
 
         {"fit",
                 (PyCFunction) kmeans_capi,
-                METH_VARARGS,
-                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                     METH_VARARGS,
+                PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
