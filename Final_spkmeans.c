@@ -4,6 +4,7 @@
 #include <Python.h>
 #define PY_SSIZE_T_CLEANS
 #include <malloc.h>
+#include <string.h>
 
 double absDouble(double d);
 
@@ -359,56 +360,12 @@ void LnormSort(int n, double * arr , int *index)
 }
 
 
-/*void sortLnorm(int n, double * arr , int * index){
-    int i, j, k, ind, last , bol;
-    double minimum= arr[0];
-    ind = 0;
-    last= 1;
-
-    for (i=0; i < n ; i++){
-        if(arr[i] < minimum)
-            minimum= arr[i];
-            ind = i;
-    }
-
-    index[0]= ind;
-    for (i=1; i < n ; i++){
-
-        for (j=0; j < n ; j++){
-            bol = 1;
-            for (k=0 ; k<last ; k++){
-                if(j == index[k])
-                    bol = 0 ;
-                    break;
-            }
-
-            if(bol ==0 )
-                continue;
-            else{
-                ind = j;
-                minimum = arr[j];
-                break;
-            }
-        }
-
-        if(j == n-1 && bol ==0 )
-            break;
-        else{
-            for (j=0; j < n ; j++){
-                for (k=0 ; k<last ; k++){
-                    if()
-                }
-        }
-    }
-}*/
-
-
 int Eigengap(int N ,double *eigenvalues){
     int k =0;
     int i;
-    double arr[N];
-    
+    double *arr;
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
+    arr = malloc(sizeof(double *) * N);
     arr[0]= max;
 
     insertionSort(N, eigenvalues);
@@ -842,7 +799,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-    
+
     return 0;
 }
 
