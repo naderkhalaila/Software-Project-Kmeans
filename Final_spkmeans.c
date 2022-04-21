@@ -12,7 +12,7 @@ void print(double **matrix, int rows, int col) {
     int j;
     for(i=0;i<rows;i++){
         for ( j = 0; j < col; j++) {
-            printf("%.3f",matrix[i][j]);
+            printf("%.4f",matrix[i][j]);
             if(j<col-1){
                 printf(",");
             }
@@ -213,7 +213,7 @@ double convergence(int N, double **matrix1 , double **matrix2){
 
 
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
-    double eps = 1.0 * exp(-15);
+    double eps = 1.0 * exp(-5);
     int Max_Iter = 100;
     double conv;
     int iter = 0;
@@ -354,7 +354,7 @@ void LnormSort(int n, double * arr , int *index)
             j = j - 1;
         }
         arr[j + 1] = key;
-        index[j + 1] = index[i];
+        index[j + 1] = i;
     }
 }
 
@@ -407,6 +407,7 @@ int Eigengap(int N ,double *eigenvalues){
     int k =0;
     int i;
     double arr[N];
+    
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
     arr[0]= max;
 
@@ -477,9 +478,14 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     }
     for (i = 0 ; i < N ; i++){
         for (j = 0 ; j<N ; j++){
-            sortedL[i][j] = eigenvectors[index[i]][j] ;
+            sortedL[i][j] = eigenvectors[i][index[j]] ;
         }
     }
+
+    if(K != 0){
+        k=K;
+    }
+
 
 
     U = malloc(sizeof(double *) * N);
@@ -492,6 +498,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             U[i][j] = sortedL[i][j];
         }
     }
+
+
 
     for(i = 0 ; i<N ; i++){
         sum = 0;
@@ -834,8 +842,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-
-
+    
     return 0;
 }
 
