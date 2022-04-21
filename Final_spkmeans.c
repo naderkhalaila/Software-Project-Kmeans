@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <Python.h>
 #define PY_SSIZE_T_CLEANS
 #include <malloc.h>
 #include <string.h>
@@ -58,8 +57,8 @@ void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacenc
         value =0;
         for (j = 0; j < N; j++){
             value += WeightedAdjacencyMatrix[i][j];
-            d = 1/ sqrt(value);
         }
+        d = 1/ sqrt(value);
         matrix[i][i] = d;
     }
 }
@@ -601,7 +600,7 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
     double  fr ,tmp;
     FILE *file;
     char C;
-    double num = 0 ;
+    double num =0;
 
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
@@ -652,7 +651,6 @@ int kmeans(char filename[], int Goal) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
     Getpoints(filename, rows, dimension, DataPoints);
-
 
     if (Temp != Goal) {
         Temp++;
