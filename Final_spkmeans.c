@@ -213,7 +213,7 @@ double convergence(int N, double **matrix1 , double **matrix2){
 
 
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
-    double eps = 1.0 * exp(-5);
+    double eps = 1.0 * pow(10,-5);
     int Max_Iter = 100;
     double conv;
     int iter = 0;
@@ -385,7 +385,6 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     int i , j ,  k;
     double sum;
     int * index;
-    double a = 0 ;
 
     eign = malloc(sizeof(double *) * N);
 
@@ -438,6 +437,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             sortedL[i][j] = eigenvectors[i][index[j]] ;
         }
     }
+    
 
     if(K != 0){
         k=K;
@@ -459,18 +459,25 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
 
 
     for(i = 0 ; i<N ; i++){
-        sum = 0;
+        sum = 0.0;
         for(j = 0 ; j<k ; j++){
             sum += pow(U[i][j],2);
         }
-        sum = pow(sum,0.5);
         for(j = 0 ; j<k ; j++){
-            a = (U[i][j])/(sum);
-            t[i][j] = a;
+
+            if(sum!=0) {
+                t[i][j] = U[i][j] / sqrt(sum);
+            }
+            if(sum==0){
+                t[i][j] = U[i][j];
+            }
+
+
         }
+
     }
 
-    print(t, N, k);
+
     for (i=0; i < N; i++){
         free(eigenvalues[i]);
         free(eigenvectors[i]);
