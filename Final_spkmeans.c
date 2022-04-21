@@ -385,7 +385,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     int i , j ,  k;
     double sum;
     int * index;
-
+    double a = 0 ;
+    
     eign = malloc(sizeof(double *) * N);
 
     eigenvalues =  malloc(sizeof(double *) * N);
@@ -464,10 +465,12 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
         sum = pow(sum,0.5);
         for(j = 0 ; j<k ; j++){
-            t[i][j] = U[i][j]/sum;
+            a = U[i][j]/sum;
+            t[i][j] = a;
         }
     }
-
+    
+    print(t, N, k);
     for (i=0; i < N; i++){
         free(eigenvalues[i]);
         free(eigenvectors[i]);
