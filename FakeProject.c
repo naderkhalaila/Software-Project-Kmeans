@@ -12,7 +12,7 @@ void print(double **matrix, int rows, int col) {
     int j;
     for(i=0;i<rows;i++){
         for ( j = 0; j < col; j++) {
-            printf("%.3f",matrix[i][j]);
+            printf("%.4f",matrix[i][j]);
             if(j<col-1){
                 printf(",");
             }
@@ -28,7 +28,7 @@ void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double *
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++){
             if(j == i){
-                matrix[i][j] = 0;
+                matrix[i][i] = 0;
                 continue;
             }
 
@@ -57,8 +57,8 @@ void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacenc
         value =0;
         for (j = 0; j < N; j++){
             value += WeightedAdjacencyMatrix[i][j];
-            d = 1/ sqrt(value);
         }
+        d = 1/ sqrt(value);
         matrix[i][i] = d;
     }
 }
@@ -83,14 +83,12 @@ void MatrixMultiplication (int N ,double **matrix , double **matrix1 , double **
 void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegreeMatrix ,
                                   double **WeightedAdjacencyMatrix){
     int i , j ;
-    double **Identity;
-    double **matrix1;
+    double **matrix1 , **Identity;
 
     Identity = malloc(sizeof(double *) * N);
     for (i = 0; i<N; i++) {
         Identity[i] = (double *) malloc(sizeof(double *) * N);
     }
-
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
             if(i==j){
@@ -118,8 +116,10 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 
     for (i=0 ; i<N ; i++){
         free(matrix1[i]);
+        free(Identity[i]);
     }
     free(matrix1);
+    free(Identity);
 }
 
 
@@ -212,116 +212,152 @@ double convergence(int N, double **matrix1 , double **matrix2){
 }
 
 
-void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix){
-    double eps = 1.0 * exp(-15);
+void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
+    double eps = 1.0 * exp(-5);
     int Max_Iter = 100;
-    double conv ;
-    int iter =0;
-    int i , j;
+    double conv;
+    int iter = 0;
+    int i, j;
 
-    double **matrixP ,**TmatrixP , **A , **A_tag , **temp;
+    double **matrixP, **TmatrixP, **A, **A_tag, **temp;
 
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
-    for (i = 0; i<N; i++) {
+    for (i = 0; i < N; i++) {
         matrixP[i] = (double *) malloc((N) * sizeof(double));
         TmatrixP[i] = (double *) malloc((N) * sizeof(double));
     }
 
-    CreatePmatrix(N ,matrixP , Lmatrix);
-    Ptrans(N , TmatrixP , matrixP);
+    CreatePmatrix(N, matrixP, Lmatrix);
+    Ptrans(N, TmatrixP, matrixP);
 
     A = malloc(sizeof(double *) * N);
     A_tag = malloc(sizeof(double *) * N);
     temp = malloc(sizeof(double *) * N);
-    for (i = 0; i<N; i++) {
+    for (i = 0; i < N; i++) {
         A[i] = (double *) malloc((N) * sizeof(double));
         A_tag[i] = (double *) malloc((N) * sizeof(double));
         temp[i] = (double *) malloc((N) * sizeof(double));
     }
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             A[i][j] = Lmatrix[i][j];
         }
     }
 
-    MatrixMultiplication(N,temp , TmatrixP , A);
-    MatrixMultiplication(N ,A_tag , temp , matrixP);
+    MatrixMultiplication(N, temp, TmatrixP, A);
+    MatrixMultiplication(N, A_tag, temp, matrixP);
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             Vectors[i][j] = matrixP[i][j];
         }
     }
 
-    conv = convergence(N ,A, A_tag);
-    if(conv <= eps){
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+    conv = convergence(N, A, A_tag);
+    if (conv <= eps) {
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 matrix[i][j] = A_tag[i][j];
             }
         }
     }
 
-    while(conv > eps && iter < Max_Iter){
+    while (conv > eps && iter < Max_Iter) {
 
         double **V;
         V = malloc(sizeof(double *) * N);
-        for (i = 0; i<N; i++) {
+        for (i = 0; i < N; i++) {
             V[i] = (double *) malloc((N) * sizeof(double));
         }
 
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 A[i][j] = A_tag[i][j];
             }
         }
 
-        CreatePmatrix(N,matrixP, A);
-        Ptrans(N ,TmatrixP , matrixP);
+        CreatePmatrix(N, matrixP, A);
+        Ptrans(N, TmatrixP, matrixP);
 
-        MatrixMultiplication(N ,V , Vectors , matrixP);
-        for( i=0 ; i<N ; i++) {
-            for ( j = 0; j < N; j++) {
+        MatrixMultiplication(N, V, Vectors, matrixP);
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                 Vectors[i][j] = V[i][j];
             }
         }
 
-        MatrixMultiplication(N, temp , TmatrixP , A);
-        MatrixMultiplication(N, A_tag , temp , matrixP);
+        for(i=0 ; i <N ; i++){
+            free(V[i]);
+        }
+        free(V);
+
+        MatrixMultiplication(N, temp, TmatrixP, A);
+        MatrixMultiplication(N, A_tag, temp, matrixP);
 
         conv = convergence(N, A, A_tag);
         iter++;
     }
 
-    for( i=0 ; i<N ; i++) {
-        for ( j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
             matrix[i][j] = A_tag[i][j];
         }
     }
+    for (i = 0; i < N; i++) {
+        free(matrixP[i]);
+        free(A[i]);
+        free(temp[i]);
+        free(A_tag[i]);
+        free(TmatrixP[i]);
+    }
+
+    free(matrixP);
+    free(A);
+    free(temp);
+    free(A_tag);
+    free(TmatrixP);
 }
 
-void swap(double *xp, double *yp)
+void insertionSort(int n, double * arr)
 {
-    double temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
+    int i, j;
+    double key;
 
-void selectionSort(int N , double *arr)
-{
-    int i, j, min_idx;
-    for (i = 0; i < N-1; i++)
-    {
-        min_idx = i;
-        for (j = i+1; j < N; j++)
-            if (arr[j] < arr[min_idx])
-                min_idx = j;
+    for (i = 1; i < n; i++) {
 
-        swap(&arr[min_idx], &arr[i]);
+        key = arr[i];
+        j = i - 1;
+
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
     }
 }
+
+void LnormSort(int n, double * arr , int *index)
+{
+    int i, j;
+    double key;
+
+    for (i = 1; i < n; i++) {
+
+        key = arr[i];
+        j = i - 1;
+
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            index[j + 1] = index[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+        index[j + 1] = i;
+    }
+}
+
 
 int Eigengap(int N ,double *eigenvalues){
     int k =0;
@@ -329,26 +365,27 @@ int Eigengap(int N ,double *eigenvalues){
     double *arr;
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
     arr = malloc(sizeof(double *) * N);
-
     arr[0]= max;
-    selectionSort(N, eigenvalues);
+
+    insertionSort(N, eigenvalues);
 
     for( i=1 ; i< floor(N/2) ; i++){
-        arr[i] = (eigenvalues[i] - eigenvalues[i+1]);
-        if(arr[i]>max){
+        arr[i] = fabs(eigenvalues[i] - eigenvalues[i+1]);
+        if(arr[i]>=max){
             max=arr[i];
             k=i;
         }
     }
-
-    return k;
+    return k+1;
 }
 
 int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoints ,  double** t){
-    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,** eigenvalues , **U;
+    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,**sortedL,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
-    int sum;
+    double sum;
+    int * index;
+    double a = 0 ;
 
     eign = malloc(sizeof(double *) * N);
 
@@ -380,21 +417,42 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
 
         k = Eigengap(N, eign);
-    }
-
-    U = malloc(sizeof(double *) * k);
-    for (i = 0; i<k; i++) {
-        U[i] = malloc(sizeof(double *) * N);
-    }
-
-
-
-    for (i = 0; i<k; i++) {
-        for (j = 0 ; j<N ; j++){
-            U[i][j] = eigenvectors[i][j];
+        for (i = 0; i < N; i++) {
+            t[i] = (double *) malloc(sizeof(double *) * k);
         }
     }
 
+    index =  malloc(sizeof(int *) * N);
+    for (i = 0; i < N; i++) {
+        eign[i] = eigenvalues[i][i];
+        index[i] = i;
+    }
+
+    LnormSort(N, eign, index);
+    sortedL = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        sortedL[i] = malloc(sizeof(double *) * N);
+    }
+    for (i = 0 ; i < N ; i++){
+        for (j = 0 ; j<N ; j++){
+            sortedL[i][j] = eigenvectors[i][index[j]] ;
+        }
+    }
+
+    if(K != 0){
+        k=K;
+    }
+
+    U = malloc(sizeof(double *) * N);
+    for (i = 0; i<N; i++) {
+        U[i] = malloc(sizeof(double *) * k);
+    }
+
+    for (i = 0; i<N; i++) {
+        for (j = 0 ; j<k ; j++){
+            U[i][j] = sortedL[i][j];
+        }
+    }
 
     for(i = 0 ; i<N ; i++){
         sum = 0;
@@ -403,9 +461,31 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
         sum = pow(sum,0.5);
         for(j = 0 ; j<k ; j++){
-            t[i][j] = U[i][j]/sum;
+            a = (U[i][j])/(sum);
+            t[i][j] = a;
         }
     }
+
+    print(t, N, k);
+    for (i=0; i < N; i++){
+        free(eigenvalues[i]);
+        free(eigenvectors[i]);
+        free(NormalizedGraphLaplacian[i]);
+        free(DiagonalDegreeMatrix[i]);
+        free(WeightedAdjacencyMatrix[i]);
+        free(U[i]);
+        free(sortedL[i]);
+    }
+    free(sortedL);
+    free(index);
+    free(eigenvalues);
+    free(eigenvectors);
+    free(NormalizedGraphLaplacian);
+    free(DiagonalDegreeMatrix);
+    free(WeightedAdjacencyMatrix);
+    free(U);
+    free(eign);
+
     return k;
 
 }
@@ -487,7 +567,6 @@ int calculate_delta(int k, int dimension, double **centroids_list, double **sum_
     return bol;
 }
 
-
 void Sizefile(char *filename, int *dimension, int *rows) {
     int tmp_dimension;
     int tmp_rows;
@@ -513,14 +592,14 @@ void Sizefile(char *filename, int *dimension, int *rows) {
     *rows = tmp_rows;
 }
 
-
 void Getpoints(char filename[] , int rows , int dimension , double **DataPoints){
     int negative;
     int p = 1;
     int i, j;
-    double num, fr ,tmp;
+    double  fr ,tmp;
     FILE *file;
     char C;
+    double num =0;
 
     file = fopen(filename, "rt");
     for (i = 0; i < rows; i++) {
@@ -561,9 +640,8 @@ int kmeans(char filename[], int Goal) {
     int rows = 0;
     int Temp = 0;
     int i, j, column;
-    double **DataPoints;
+    double **DataPoints , **t;
     double **WeightedAdjacencyMatrix, **DiagonalDegreeMatrix, **NormalizedGraphLaplacian, **jacobi, **Vectors, **matrix;
-
 
     Sizefile(filename, &dimension, &rows);
     DataPoints = malloc(sizeof(double *) * rows);
@@ -572,7 +650,16 @@ int kmeans(char filename[], int Goal) {
     }
     Getpoints(filename, rows, dimension, DataPoints);
 
+    if(Goal == 10){
 
+        t = malloc(sizeof(double *) * rows);
+        for (i = 0; i < rows; i++) {
+            t[i] = (double *) malloc((3) * sizeof(double));
+        }
+        NormalizedSpectralClustering(10, 3, 2 , DataPoints ,t);
+
+        return 1;
+    }
     if (Temp != Goal) {
         Temp++;
         WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
@@ -581,9 +668,20 @@ int kmeans(char filename[], int Goal) {
         }
         TheWeightedAdjacencyMatrix(rows, dimension, WeightedAdjacencyMatrix, DataPoints);
 
+        for (i=0; i < rows; i++){
+            free(DataPoints[i]);
+        }
+        free(DataPoints);
+
         if (Temp == Goal) {
             column = rows;
             print(WeightedAdjacencyMatrix, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(WeightedAdjacencyMatrix[i]);
+            }
+            free(WeightedAdjacencyMatrix);
+
             return 1;
         }
     }
@@ -597,6 +695,14 @@ int kmeans(char filename[], int Goal) {
         if (Temp == Goal) {
             column = rows;
             print(DiagonalDegreeMatrix, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(DiagonalDegreeMatrix[i]);
+                free(WeightedAdjacencyMatrix[i]);
+            }
+            free(DiagonalDegreeMatrix);
+            free(WeightedAdjacencyMatrix);
+
             return 1;
         }
     }
@@ -607,13 +713,26 @@ int kmeans(char filename[], int Goal) {
             NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
         }
         TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
+
+        for (i=0; i < rows; i++){
+            free(DiagonalDegreeMatrix[i]);
+            free(WeightedAdjacencyMatrix[i]);
+        }
+        free(DiagonalDegreeMatrix);
+        free(WeightedAdjacencyMatrix);
+
         if (Temp == Goal) {
             column = rows;
             print(NormalizedGraphLaplacian, rows, column);
+
+            for (i=0; i < rows; i++){
+                free(NormalizedGraphLaplacian[i]);
+            }
+            free(NormalizedGraphLaplacian);
+
             return 1;
         }
     }
-
     if (Temp != Goal) {
         Temp++;
         jacobi = malloc(sizeof(double *) * rows);
@@ -640,6 +759,19 @@ int kmeans(char filename[], int Goal) {
         }
         column = rows;
         print(matrix, rows + 1, column);
+
+        for (i=0; i < rows; i++){
+            free(jacobi[i]);
+            free(Vectors[i]);
+            free(NormalizedGraphLaplacian[i]);
+            free(matrix[i]);
+        }
+        free(matrix[rows]);
+        free(matrix);
+        free(jacobi);
+        free(Vectors);
+        free(NormalizedGraphLaplacian);
+
         return 1;
     }
 
@@ -647,33 +779,35 @@ int kmeans(char filename[], int Goal) {
 }
 
 int main(int argc, char** argv) {
-    if(argc != 3){
-        printf("Invalid Input!");
-        return 0;
-    }
-    if(strcmp(argv[1],"wam")==0){
-        return kmeans(argv[2] , 1);
-    }
-    else{
-        if (strcmp(argv[1],"ddg")==0){
-            return kmeans(argv[2] , 2);
-        }
-        else{
-            if(strcmp(argv[1],"lnorm")==0){
-                return kmeans(argv[2] , 3);
-            }
-            else{
-                if(strcmp(argv[1],"jacobi")==0){
-                    return kmeans(argv[2] , 4);
-                }
-                else{
-                    printf("Invalid Input!");
-                    return 0;
-                }
-            }
-        }
-    }
-
-
+    kmeans(argv[1], 10);
+    return 1;
+}
+/*if(argc != 3){
+    printf("Invalid Input!");
     return 0;
 }
+if(strcmp(argv[1],"wam")==0){
+    return kmeans(argv[2] , 1);
+}
+else{
+    if (strcmp(argv[1],"ddg")==0){
+        return kmeans(argv[2] , 2);
+    }
+    else{
+        if(strcmp(argv[1],"lnorm")==0){
+            return kmeans(argv[2] , 3);
+        }
+        else{
+            if(strcmp(argv[1],"jacobi")==0){
+                return kmeans(argv[2] , 4);
+            }
+            else{
+                printf("Invalid Input!");
+                return 0;
+            }
+        }
+    }
+}
+
+return 0;
+}*/
