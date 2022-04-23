@@ -7,6 +7,10 @@
 
 void print(double **matrix, int rows, int col);
 
+void check(double ** Data);
+
+void checkSub(double * Data);
+
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints);
 
 void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacencyMatrix);
@@ -26,9 +30,9 @@ double convergence(int N, double **matrix1 , double **matrix2);
 
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix);
 
-void swap(double *xp, double *yp);
+void LnormSort(int n, double * arr , int *index);
 
-void selectionSort(int N , double *arr);
+void insertionSort(int n, double * arr);
 
 int Eigengap(int N ,double *eigenvalues);
 
