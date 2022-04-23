@@ -4,22 +4,9 @@
 #define PY_SSIZE_T_CLEANS
 #include <malloc.h>
 #include <string.h>
+#include <assert.h>
 
 double absDouble(double d);
-
-void check(double ** Data){
-    if (Data == NULL){
-        printf("An Error Has Occurred\n");
-        exit(1);
-    }
-}
-
-void checkSub(double * Data){
-    if (Data == NULL){
-        printf("An Error Has Occurred\n");
-        exit(1);
-    }
-}
 
 void print(double **matrix, int rows, int col) {
     int i;
@@ -234,13 +221,13 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
 
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
-    check(matrixP);
-    check(TmatrixP);
+    assert(matrixP!=NULL);
+    assert(TmatrixP!=NULL);
     for (i = 0; i < N; i++) {
         matrixP[i] = (double *) malloc((N) * sizeof(double));
         TmatrixP[i] = (double *) malloc((N) * sizeof(double));
-        checkSub(matrixP[i]);
-        checkSub(TmatrixP[i]);
+        assert(matrixP[i]!=NULL);
+        assert(TmatrixP[i]!=NULL);
     }
 
     CreatePmatrix(N, matrixP, Lmatrix);
@@ -249,16 +236,16 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     A = malloc(sizeof(double *) * N);
     A_tag = malloc(sizeof(double *) * N);
     temp = malloc(sizeof(double *) * N);
-    check(A);
-    check(A_tag);
-    check(temp);
+    assert(A!=NULL);
+    assert(A_tag!=NULL);
+    assert(temp!=NULL);
     for (i = 0; i < N; i++) {
         A[i] = (double *) malloc((N) * sizeof(double));
         A_tag[i] = (double *) malloc((N) * sizeof(double));
         temp[i] = (double *) malloc((N) * sizeof(double));
-        checkSub(A[i]);
-        checkSub(A_tag[i]);
-        checkSub(temp[i]);
+        assert(A[i]!=NULL);
+        assert(A_tag[i]!=NULL);
+        assert(temp[i]!=NULL);
     }
 
     for (i = 0; i < N; i++) {
@@ -289,10 +276,10 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
 
         double **V;
         V = malloc(sizeof(double *) * N);
-        check(V);
+        assert(V!=NULL);
         for (i = 0; i < N; i++) {
             V[i] = (double *) malloc((N) * sizeof(double));
-            checkSub(V[i]);
+            assert(V[i]!=NULL);
         }
 
         for (i = 0; i < N; i++) {
@@ -398,7 +385,7 @@ int Eigengap(int N ,double *eigenvalues){
     double *arr;
     double max = fabs(eigenvalues[0] - eigenvalues[1]);
     arr = malloc(sizeof(double *) * N);
-    check(arr);
+    assert(arr!=NULL);
     arr[0]= max;
 
     insertionSort(N, eigenvalues);
@@ -426,23 +413,23 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     NormalizedGraphLaplacian = malloc(sizeof(double *) * N);
     DiagonalDegreeMatrix = malloc(sizeof(double *) * N);
     WeightedAdjacencyMatrix = malloc(sizeof(double *) * N);
-    check(eign);
-    check(eigenvalues);
-    check(eigenvectors);
-    check(NormalizedGraphLaplacian);
-    check(DiagonalDegreeMatrix);
-    check(WeightedAdjacencyMatrix);
+    assert(eign!=NULL);
+    assert(eigenvalues!=NULL);
+    assert(eigenvectors!=NULL);
+    assert(NormalizedGraphLaplacian!=NULL);
+    assert(DiagonalDegreeMatrix!=NULL);
+    assert(WeightedAdjacencyMatrix!=NULL);
     for (i = 0; i<N; i++) {
         NormalizedGraphLaplacian[i] = (double *)malloc(sizeof(double *) * N);
         eigenvectors[i] = (double *)malloc(sizeof(double *) * N);
         eigenvalues[i] = (double *)malloc(sizeof(double *) * N);
         DiagonalDegreeMatrix[i] = (double *) malloc((N) * sizeof(double));
         WeightedAdjacencyMatrix[i] = (double *) malloc((N) * sizeof(double));
-        checkSub(eigenvalues[i]);
-        checkSub(eigenvectors[i]);
-        checkSub(NormalizedGraphLaplacian[i]);
-        checkSub(DiagonalDegreeMatrix[i]);
-        checkSub(WeightedAdjacencyMatrix[i]);
+        assert(NormalizedGraphLaplacian[i]!=NULL);
+        assert(eigenvectors[i]!=NULL);
+        assert(eigenvalues[i]!=NULL);
+        assert(DiagonalDegreeMatrix[i]!=NULL);
+        assert(WeightedAdjacencyMatrix[i]!=NULL);
     }
 
     TheWeightedAdjacencyMatrix(N, dimension , WeightedAdjacencyMatrix , DataPoints);
@@ -462,12 +449,12 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         k = Eigengap(N, eign);
         for (i = 0; i < N; i++) {
             t[i] = (double *) malloc(sizeof(double *) * k);
-            checkSub(t[i]);
+            assert(t!=NULL);
         }
     }
 
     index =  malloc(sizeof(int *) * N);
-    check(index);
+    assert(index!=NULL);
     for (i = 0; i < N; i++) {
         eign[i] = eigenvalues[i][i];
         index[i] = i;
@@ -475,10 +462,10 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
 
     LnormSort(N, eign, index);
     sortedL = malloc(sizeof(double *) * N);
-    check(sortedL);
+    assert(sortedL!=NULL);
     for (i = 0; i<N; i++) {
         sortedL[i] = malloc(sizeof(double *) * N);
-        checkSub(sortedL[i]);
+        assert(sortedL[i]!=NULL);
     }
     for (i = 0 ; i < N ; i++){
         for (j = 0 ; j<N ; j++){
@@ -487,10 +474,10 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     }
 
     U = malloc(sizeof(double *) * N);
-    check(U);
+    assert(U!=NULL);
     for (i = 0; i<N; i++) {
         U[i] = malloc(sizeof(double *) * k);
-        checkSub(U[i]);
+        assert(U[i]!=NULL);
     }
 
     for (i = 0; i<N; i++) {
@@ -711,10 +698,10 @@ int kmeans(char filename[], int Goal) {
 
     Sizefile(filename, &dimension, &rows);
     DataPoints = malloc(sizeof(double *) * rows);
-    check(DataPoints);
+    assert(DataPoints!=NULL);
     for (i = 0; i < rows; i++) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
-        checkSub(DataPoints[i]);
+        assert(DataPoints[i]!=NULL);
     }
     Getpoints(filename, rows, dimension, DataPoints);
 
@@ -726,20 +713,20 @@ int kmeans(char filename[], int Goal) {
         }
         jacobi = malloc(sizeof(double *) * rows);
         Vectors = malloc(sizeof(double *) * rows);
-        check(jacobi);
-        check(Vectors);
+        assert(jacobi!=NULL);
+        assert(Vectors!=NULL);
         for (i = 0; i < rows; i++) {
             jacobi[i] = (double *) malloc(sizeof(double *) * rows);
             Vectors[i] = (double *) malloc(sizeof(double *) * rows);
-            checkSub(jacobi[i]);
-            checkSub(Vectors[i]);
+            assert(jacobi[i]!=NULL);
+            assert(Vectors[i]!=NULL);
         }
 
         matrix = malloc(sizeof(double *) * rows + 1);
-        check(matrix);
+        assert(matrix!=NULL);
         for (i = 0; i < rows + 1; i++) {
             matrix[i] = (double *) malloc(sizeof(double *) * rows);
-            checkSub(matrix[i]);
+            assert(matrix[i]!=NULL);
         }
 
         Jacobi(rows, jacobi, Vectors, DataPoints);
@@ -770,10 +757,10 @@ int kmeans(char filename[], int Goal) {
     if (Temp != Goal) {
         Temp++;
         WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
-        check(WeightedAdjacencyMatrix);
+        assert(WeightedAdjacencyMatrix!=NULL);
         for (i = 0; i < rows; i++) {
             WeightedAdjacencyMatrix[i] = (double *) malloc(sizeof(double *) * rows);
-            checkSub(WeightedAdjacencyMatrix[i]);
+            assert(WeightedAdjacencyMatrix[i] !=NULL);
         }
         TheWeightedAdjacencyMatrix(rows, dimension, WeightedAdjacencyMatrix, DataPoints);
 
@@ -797,10 +784,10 @@ int kmeans(char filename[], int Goal) {
     if (Temp != Goal) {
         Temp++;
         DiagonalDegreeMatrix = malloc(sizeof(double *) * rows);
-        check(DiagonalDegreeMatrix);
+        assert(DiagonalDegreeMatrix !=NULL);
         for (i = 0; i < rows; i++) {
             DiagonalDegreeMatrix[i] = (double *) malloc(sizeof(double *) * rows);
-            checkSub(DiagonalDegreeMatrix[i]);
+            assert(DiagonalDegreeMatrix[i] !=NULL);
         }
         TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
         if (Temp == Goal) {
@@ -823,10 +810,10 @@ int kmeans(char filename[], int Goal) {
     if (Temp != Goal) {
         Temp++;
         NormalizedGraphLaplacian = malloc(sizeof(double *) * rows);
-        check(NormalizedGraphLaplacian);
+        assert(NormalizedGraphLaplacian !=NULL);
         for (i = 0; i < rows; i++) {
             NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
-            checkSub(NormalizedGraphLaplacian[i]);
+            assert(NormalizedGraphLaplacian[i] !=NULL);
         }
         TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
 
