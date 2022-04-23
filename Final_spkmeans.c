@@ -99,10 +99,10 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 
 
     matrix1 = malloc(sizeof(double *) * N);
-    assert(matrix1!=NULL);
+
     for (i = 0; i<N; i++) {
         matrix1[i] = (double *) malloc(sizeof(double *) * N);
-        assert(matrix1[i]!=NULL);
+
     }
     MatrixMultiplication(N , matrix1, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
     MatrixMultiplication(N , matrix, matrix1 , DiagonalDegreeMatrix);
@@ -213,11 +213,11 @@ double convergence(int N, double **matrix1 , double **matrix2){
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     double eps = 1.0 * pow(10,-5);
     int Max_Iter = 100;
-    double conv  , tempdouble;
+    double conv;
     int iter = 0;
-    int i, j , tempint;
+    int i, j;
 
-    double **matrixP, **TmatrixP, **A, **A_tag, **temp , **V;;
+    double **matrixP, **TmatrixP, **A, **A_tag, **temp;
 
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
@@ -273,6 +273,8 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     }
 
     while (conv > eps && iter < Max_Iter) {
+
+        double **V;
         V = malloc(sizeof(double *) * N);
         assert(V!=NULL);
         for (i = 0; i < N; i++) {
@@ -309,14 +311,14 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     }
 
     for(i=0 ; i<N ; i++){
-        for(j=0 ; j<N ; j++){
-            tempdouble = Vectors[i][j] * 10000;
-            tempint = (int)tempdouble;
-            tempdouble= ((double)tempint) * 10000 ;
-            if(tempdouble == -0.0000)
+        for(j=0 ; j<N ; j++) {
+            if(Vectors[i][j] >= -0.00005 && Vectors[i][j]<=0){
                 Vectors[i][j] = 0.0000;
+            }
         }
     }
+
+
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -445,10 +447,12 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
 
         k = Eigengap(N, eign);
+        return k;
+        /*
         for (i = 0; i < N; i++) {
             t[i] = (double *) malloc(sizeof(double *) * k);
             assert(t!=NULL);
-        }
+        }*/
     }
 
     index =  malloc(sizeof(int *) * N);
@@ -484,6 +488,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         }
     }
 
+
     for(i = 0 ; i<N ; i++) {
         sum = 0.0;
         for (j = 0; j < k; j++) {
@@ -497,10 +502,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             if (sum == 0) {
                 t[i][j] = U[i][j];
             }
-
-
         }
-
     }
 
     for (i=0; i < N; i++){
@@ -684,6 +686,7 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
     }
     fclose(file);
     free(file);
+
 }
 
 int kmeans(char filename[], int Goal) {
@@ -747,10 +750,10 @@ int kmeans(char filename[], int Goal) {
             free(matrix[i]);
             free(DataPoints[i]);
         }
+        free(DataPoints);
         free(matrix[rows]);
         free(matrix);
         free(jacobi);
-        free(DataPoints);
         free(Vectors);
 
         return 1;
