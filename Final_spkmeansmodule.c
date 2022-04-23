@@ -107,7 +107,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 assert(t[i]!=NULL);
             }
 
-            NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
+            k = NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
 
             array = PyList_New(rows);
             if (!array){
