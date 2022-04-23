@@ -662,44 +662,6 @@ int kmeans(char filename[], int Goal) {
     }
     Getpoints(filename, rows, dimension, DataPoints);
 
-    if(Goal == 4){
-        jacobi = malloc(sizeof(double *) * rows);
-        Vectors = malloc(sizeof(double *) * rows);
-        for (i = 0; i < rows; i++) {
-            jacobi[i] = (double *) malloc(sizeof(double *) * rows);
-            Vectors[i] = (double *) malloc(sizeof(double *) * rows);
-        }
-
-        matrix = malloc(sizeof(double *) * rows + 1);
-        for (i = 0; i < rows + 1; i++) {
-            matrix[i] = (double *) malloc(sizeof(double *) * rows);
-        }
-
-        Jacobi(rows, jacobi, Vectors, DataPoints);
-
-        for (i = 0; i < rows; i++) {
-            matrix[0][i] = jacobi[i][i];
-        }
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < rows; j++) {
-                matrix[i + 1][j] = Vectors[i][j];
-            }
-        }
-        column = rows;
-        print(matrix, rows + 1, column);
-
-        for (i=0; i < rows; i++){
-            free(jacobi[i]);
-            free(Vectors[i]);
-            free(matrix[i]);
-        }
-        free(matrix[rows]);
-        free(matrix);
-        free(jacobi);
-        free(Vectors);
-
-        return 1;
-    }
 
     if (Temp != Goal) {
         Temp++;
@@ -735,6 +697,9 @@ int kmeans(char filename[], int Goal) {
         TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
         if (Temp == Goal) {
             column = rows;
+            for (i = 0 ; i < rows ; i++){
+                DiagonalDegreeMatrix[i][i] = 1/pow(DiagonalDegreeMatrix[i][i],2);
+            }
             print(DiagonalDegreeMatrix, rows, column);
 
             for (i=0; i < rows; i++){
@@ -755,7 +720,7 @@ int kmeans(char filename[], int Goal) {
         }
         TheNormalizedGraphLaplacian(rows, NormalizedGraphLaplacian, DiagonalDegreeMatrix, WeightedAdjacencyMatrix);
 
-        for (i = 0; i < rows; i++) {
+        for (i=0; i < rows; i++){
             free(DiagonalDegreeMatrix[i]);
             free(WeightedAdjacencyMatrix[i]);
         }
@@ -766,13 +731,54 @@ int kmeans(char filename[], int Goal) {
             column = rows;
             print(NormalizedGraphLaplacian, rows, column);
 
-            for (i = 0; i < rows; i++) {
+            for (i=0; i < rows; i++){
                 free(NormalizedGraphLaplacian[i]);
             }
             free(NormalizedGraphLaplacian);
 
             return 1;
         }
+    }
+    if (Temp != Goal) {
+        Temp++;
+        jacobi = malloc(sizeof(double *) * rows);
+        Vectors = malloc(sizeof(double *) * rows);
+        for (i = 0; i < rows; i++) {
+            jacobi[i] = (double *) malloc(sizeof(double *) * rows);
+            Vectors[i] = (double *) malloc(sizeof(double *) * rows);
+        }
+
+        matrix = malloc(sizeof(double *) * rows + 1);
+        for (i = 0; i < rows + 1; i++) {
+            matrix[i] = (double *) malloc(sizeof(double *) * rows);
+        }
+
+        Jacobi(rows, jacobi, Vectors, NormalizedGraphLaplacian);
+
+        for (i = 0; i < rows; i++) {
+            matrix[0][i] = jacobi[i][i];
+        }
+        for (i = 0; i < rows; i++) {
+            for (j = 0; j < rows; j++) {
+                matrix[i + 1][j] = Vectors[i][j];
+            }
+        }
+        column = rows;
+        print(matrix, rows + 1, column);
+
+        for (i=0; i < rows; i++){
+            free(jacobi[i]);
+            free(Vectors[i]);
+            free(NormalizedGraphLaplacian[i]);
+            free(matrix[i]);
+        }
+        free(matrix[rows]);
+        free(matrix);
+        free(jacobi);
+        free(Vectors);
+        free(NormalizedGraphLaplacian);
+
+        return 1;
     }
 
     return 0;
