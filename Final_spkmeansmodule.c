@@ -102,12 +102,14 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         if (Goal == 1) {
 
             t = malloc(sizeof(double *) * rows);
-
+            assert(t!=NULL);
             if (K == 0) {
                 k = NormalizedSpectralClustering(rows, K, dimension, DataPoints, t);
                 kmatrix = malloc(sizeof(double *) * 1);
+                assert(kmatrix!=NULL);
                 for (i = 0; i < 1; i++) {
                     kmatrix[i] = (double *) malloc(sizeof(double *) * 1);
+                    assert(kmatrix[i]!=NULL);
                 }
                 kmatrix[0][0] = k;
 
@@ -144,6 +146,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             if (K != 0) {
                 for (i = 0; i < rows; i++) {
                     t[i] = (double *) malloc(sizeof(double *) * k);
+                    assert(t[i]!=NULL);
                 }
 
                 NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
@@ -179,15 +182,21 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         }
         if (Goal == 5) {
             jacobi = malloc(sizeof(double *) * rows);
+            assert(jacobi!=NULL);
             Vectors = malloc(sizeof(double *) * rows);
+            assert(Vectors!=NULL);
             for (i = 0; i<rows; i++) {
                 jacobi[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(jacobi[i] !=NULL);
                 Vectors[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(Vectors[i] !=NULL);
             }
 
             matrix = malloc(sizeof(double *) * rows+1);
+            assert(matrix !=NULL);
             for (i = 0; i<rows+1; i++) {
                 matrix[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(matrix[i] !=NULL);
             }
 
             Jacobi(rows, jacobi , Vectors ,DataPoints);
@@ -234,8 +243,10 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         if (Temp != Goal){
             Temp ++;
             WeightedAdjacencyMatrix = malloc(sizeof(double *) * rows);
+            assert(WeightedAdjacencyMatrix!=NULL);
             for (i = 0; i<rows; i++) {
                 WeightedAdjacencyMatrix[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(WeightedAdjacencyMatrix[i] !=NULL);
             }
             TheWeightedAdjacencyMatrix(rows , dimension , WeightedAdjacencyMatrix , DataPoints);
 
@@ -276,11 +287,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         if (Temp != Goal){
             Temp ++;
             DiagonalDegreeMatrix = malloc(sizeof(double *) * rows);
+            assert(DiagonalDegreeMatrix!=NULL);
             for (i = 0; i<rows; i++) {
                 DiagonalDegreeMatrix[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(DiagonalDegreeMatrix[i] !=NULL);
             }
             TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
-            
+
             if(Temp == Goal){
                 for (i = 0 ; i < rows ; i++){
                     DiagonalDegreeMatrix[i][i] = 1/pow(DiagonalDegreeMatrix[i][i],2);
@@ -316,8 +329,10 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         if (Temp != Goal){
             Temp ++;
             NormalizedGraphLaplacian = malloc(sizeof(double *) * rows);
+            assert(NormalizedGraphLaplacian!=NULL);
             for (i = 0; i<rows; i++) {
                 NormalizedGraphLaplacian[i] = (double *) malloc(sizeof(double *) * rows);
+                assert(NormalizedGraphLaplacian[i] !=NULL);
             }
             TheNormalizedGraphLaplacian(rows , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
 
@@ -362,10 +377,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
         centroids_list = parse_arrays(Py_centroids, k, dimension);
         sum_array = malloc(sizeof(double *) * k);
+        assert(sum_array!=NULL);
         for (i = 0; i < k; i++) {
             sum_array[i] = (double *) malloc((dimension) * sizeof(double));
+            assert(sum_array[i] !=NULL);
         }
         count_array = (int *) malloc(sizeof(int) * K);
+        assert(count_array!=NULL);
 
         iter = 0;
         while (delta == 0 && iter < MAX_ITER) {
