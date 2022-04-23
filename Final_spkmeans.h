@@ -7,10 +7,6 @@
 
 void print(double **matrix, int rows, int col);
 
-void check(double ** Data);
-
-void checkSub(double * Data);
-
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints);
 
 void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacencyMatrix);
