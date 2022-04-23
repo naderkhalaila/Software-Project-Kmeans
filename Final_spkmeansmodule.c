@@ -53,8 +53,8 @@ static PyMethodDef capiMethods[] = {
 
         {"fit",
                 (PyCFunction) kmeans_capi,
-                     METH_VARARGS,
-                PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                METH_VARARGS,
+                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -176,6 +176,60 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
                 return array;
             }
+        }
+        if (Goal == 4) {
+            jacobi = malloc(sizeof(double *) * rows);
+            Vectors = malloc(sizeof(double *) * rows);
+            for (i = 0; i<rows; i++) {
+                jacobi[i] = (double *) malloc(sizeof(double *) * rows);
+                Vectors[i] = (double *) malloc(sizeof(double *) * rows);
+            }
+
+            matrix = malloc(sizeof(double *) * rows+1);
+            for (i = 0; i<rows+1; i++) {
+                matrix[i] = (double *) malloc(sizeof(double *) * rows);
+            }
+
+            Jacobi(rows, jacobi , Vectors ,DataPoints);
+
+            for (i = 0; i < rows; i++) {
+                matrix[0][i] = jacobi[i][i];
+            }
+            for (i = 0; i < rows; i++) {
+                for (j = 0; j < rows; j++) {
+                    matrix[i + 1][j] = Vectors[i][j];
+                }
+            }
+
+            array = PyList_New(rows+1);
+            if (!array){
+                return NULL;
+            }
+            for(i=0; i<rows+1; i++){
+                vec = PyList_New(rows);
+                if (!vec){
+                    return NULL;
+                }
+                for (j = 0; j < rows; j++) {
+                    num = PyFloat_FromDouble(matrix[i][j]);
+                    if (!num) {
+                        Py_DECREF(vec);
+                        return NULL;
+                    }PyList_SET_ITEM(vec, j, num);
+                }PyList_SET_ITEM(array, i, vec);
+            }
+
+            for (i=0; i < rows; i++){
+                free(jacobi[i]);
+                free(Vectors[i]);
+                free(matrix[i]);
+            }
+            free(matrix[rows]);
+            free(matrix);
+            free(jacobi);
+            free(Vectors);
+
+            return array;
         }
         if (Temp != Goal){
             Temp ++;
@@ -299,64 +353,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 return array;
             }
         }
-        if (Temp != Goal){
-            Temp ++;
 
-            jacobi = malloc(sizeof(double *) * rows);
-            Vectors = malloc(sizeof(double *) * rows);
-            for (i = 0; i<rows; i++) {
-                jacobi[i] = (double *) malloc(sizeof(double *) * rows);
-                Vectors[i] = (double *) malloc(sizeof(double *) * rows);
-            }
-
-            matrix = malloc(sizeof(double *) * rows+1);
-            for (i = 0; i<rows+1; i++) {
-                matrix[i] = (double *) malloc(sizeof(double *) * rows);
-            }
-
-            Jacobi(rows, jacobi , Vectors ,NormalizedGraphLaplacian);
-
-            for (i = 0; i < rows; i++) {
-                matrix[0][i] = jacobi[i][i];
-            }
-            for (i = 0; i < rows; i++) {
-                for (j = 0; j < rows; j++) {
-                    matrix[i + 1][j] = Vectors[i][j];
-                }
-            }
-
-            array = PyList_New(rows+1);
-            if (!array){
-                return NULL;
-            }
-            for(i=0; i<rows+1; i++){
-                vec = PyList_New(rows);
-                if (!vec){
-                    return NULL;
-                }
-                for (j = 0; j < rows; j++) {
-                    num = PyFloat_FromDouble(matrix[i][j]);
-                    if (!num) {
-                        Py_DECREF(vec);
-                        return NULL;
-                    }PyList_SET_ITEM(vec, j, num);
-                }PyList_SET_ITEM(array, i, vec);
-            }
-
-            for (i=0; i < rows; i++){
-                free(jacobi[i]);
-                free(Vectors[i]);
-                free(NormalizedGraphLaplacian[i]);
-                free(matrix[i]);
-            }
-            free(matrix[rows]);
-            free(matrix);
-            free(jacobi);
-            free(Vectors);
-            free(NormalizedGraphLaplacian);
-
-            return array;
-        }
     }
     else {
 
@@ -406,7 +403,9 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         free(DataPoints);
         free(sum_array);
         free(count_array);
+        return array;
+
     }
-    return array;
+    return 0;
 }
 
