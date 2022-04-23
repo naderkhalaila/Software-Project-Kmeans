@@ -53,8 +53,8 @@ static PyMethodDef capiMethods[] = {
 
         {"fit",
                 (PyCFunction) kmeans_capi,
-                     METH_VARARGS,
-                PyDoc_STR("calculates the centroids using kmeans algorithm")},
+                METH_VARARGS,
+                        PyDoc_STR("calculates the centroids using kmeans algorithm")},
         {NULL, NULL, 0, NULL}
 };
 
@@ -100,85 +100,41 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
 
     if (Part == 0){
         if (Goal == 1) {
-
             t = malloc(sizeof(double *) * rows);
             assert(t!=NULL);
-            if (K == 0) {
-                k = NormalizedSpectralClustering(rows, K, dimension, DataPoints, t);
-                kmatrix = malloc(sizeof(double *) * 1);
-                assert(kmatrix!=NULL);
-                for (i = 0; i < 1; i++) {
-                    kmatrix[i] = (double *) malloc(sizeof(double *) * 1);
-                    assert(kmatrix[i]!=NULL);
-                }
-                kmatrix[0][0] = k;
-
-                array = PyList_New(1);
-                if (!array){
-                    return NULL;
-                }
-                for(i=0; i<1; i++){
-                    vec = PyList_New(1);
-                    if (!vec){
-                        return NULL;
-                    }
-                    for (j = 0; j < 1; j++) {
-                        num = PyFloat_FromDouble(kmatrix[i][j]);
-                        if (!num) {
-                            Py_DECREF(vec);
-                            return NULL;
-                        }PyList_SET_ITEM(vec, j, num);
-                    }PyList_SET_ITEM(array, i, vec);
-                }
-
-                for (i=0; i < rows; i++){
-                    free(DataPoints[i]);
-                    //free(t[i]);
-                }
-                free(DataPoints);
-                free(t);
-                free(kmatrix[0]);
-                free(kmatrix);
-
-                return array;
+            for (i = 0; i < rows; i++) {
+                t[i] = (double *) malloc(sizeof(double *) * k);
+                assert(t[i]!=NULL);
             }
 
-            if (K != 0) {
-                for (i = 0; i < rows; i++) {
-                    t[i] = (double *) malloc(sizeof(double *) * k);
-                    assert(t[i]!=NULL);
-                }
+            NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
 
-                NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
-
-
-                array = PyList_New(rows);
-                if (!array){
+            array = PyList_New(rows);
+            if (!array){
+                return NULL;
+            }
+            for(i=0; i<rows; i++){
+                vec = PyList_New(k);
+                if (!vec){
                     return NULL;
                 }
-                for(i=0; i<rows; i++){
-                    vec = PyList_New(k);
-                    if (!vec){
+                for (j = 0; j < k; j++) {
+                    num = PyFloat_FromDouble(t[i][j]);
+                    if (!num) {
+                        Py_DECREF(vec);
                         return NULL;
-                    }
-                    for (j = 0; j < k; j++) {
-                        num = PyFloat_FromDouble(t[i][j]);
-                        if (!num) {
-                            Py_DECREF(vec);
-                            return NULL;
-                        }PyList_SET_ITEM(vec, j, num);
-                    }PyList_SET_ITEM(array, i, vec);
-                }
-
-                for (i=0; i < rows; i++){
-                    free(DataPoints[i]);
-                    free(t[i]);
-                }
-                free(DataPoints);
-                free(t);
-
-                return array;
+                    }PyList_SET_ITEM(vec, j, num);
+                }PyList_SET_ITEM(array, i, vec);
             }
+
+            for (i=0; i < rows; i++){
+                free(DataPoints[i]);
+                free(t[i]);
+            }
+            free(DataPoints);
+            free(t);
+
+            return array;
         }
         if (Goal == 5) {
             jacobi = malloc(sizeof(double *) * rows);
