@@ -48,9 +48,10 @@ def KmeansPlus(k, goal, filename):
             return -1
 
         Data_list = DataPoints.tolist()
+        
+        matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
+        matrix = np.array(matrix)
         if K==0:
-            matrix = mykmeanssp.fit(Data_list, None, rows, dimension, k, 300, goal, 0)
-            matrix = np.array(matrix)
             K = len(matrix[0])
 
         centroids = np.ndarray((K, K), float)
