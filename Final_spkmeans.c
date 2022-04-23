@@ -99,10 +99,10 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
 
 
     matrix1 = malloc(sizeof(double *) * N);
-    check(matrix1);
+    assert(matrix1!=NULL);
     for (i = 0; i<N; i++) {
         matrix1[i] = (double *) malloc(sizeof(double *) * N);
-        checkSub(matrix1[i]);
+        assert(matrix1[i]!=NULL);
     }
     MatrixMultiplication(N , matrix1, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
     MatrixMultiplication(N , matrix, matrix1 , DiagonalDegreeMatrix);
