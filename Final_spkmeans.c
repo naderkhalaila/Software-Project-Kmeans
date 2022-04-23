@@ -300,11 +300,19 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
         iter++;
     }
 
+    for(i=0 ; i<N ; i++){
+        for(j=0 ; j<N ; j++){
+            
+            Vectors[i][j] = (double)("%.4f",Vectors[i][j]);
+        }
+    }
+
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             matrix[i][j] = A_tag[i][j];
         }
     }
+
     for (i = 0; i < N; i++) {
         free(matrixP[i]);
         free(A[i]);
@@ -512,6 +520,8 @@ double dist(double *point1, double *point2, int dimension) {
     sum = pow(sum, 0.5);
     return sum;
 }
+
+void is_symmetric(double **matrix)
 
 int mindist(int k, int dimension, double **centroids_list, double *point) {
 
