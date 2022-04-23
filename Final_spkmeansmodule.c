@@ -101,13 +101,14 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
     if (Part == 0){
         if (Goal == 1) {
             t = malloc(sizeof(double *) * rows);
-            assert(t!=NULL);
-            for (i = 0; i < rows; i++) {
-                t[i] = (double *) malloc(sizeof(double *) * k);
-                assert(t[i]!=NULL);
+            assert(t != NULL);
+            if (k != 0) {
+                for (i = 0; i < rows; i++) {
+                    t[i] = (double *) malloc(sizeof(double *) * k);
+                    assert(t[i] != NULL);
+                }
             }
-
-            k = NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
+            NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
 
             array = PyList_New(rows);
             if (!array){
