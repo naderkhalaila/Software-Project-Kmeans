@@ -7,6 +7,8 @@
 
 void print(double **matrix, int rows, int col);
 
+int symetric(double ** Datapoints ,int dimension , int rows);
+
 void TheWeightedAdjacencyMatrix(int N ,int dimension ,double **matrix , double **DataPoints);
 
 void TheDiagonalDegreeMatrix(int N , double **matrix , double **WeightedAdjacencyMatrix);
