@@ -215,9 +215,9 @@ double convergence(int N, double **matrix1 , double **matrix2){
 void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     double eps = 1.0 * pow(10,-5);
     int Max_Iter = 100;
-    double conv;
+    double conv  , tempdouble;
     int iter = 0;
-    int i, j;
+    int i, j , tempint;
 
     double **matrixP, **TmatrixP, **A, **A_tag, **temp;
 
@@ -302,8 +302,10 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
 
     for(i=0 ; i<N ; i++){
         for(j=0 ; j<N ; j++){
-            
-            Vectors[i][j] = (double)("%.4f",Vectors[i][j]);
+            tempdouble = Vectors[i][j] * 10000;
+            tempint = (int)tempdouble;
+            tempdouble= ((double)tempint) * 10000 ;
+            Vectors[i][j] = tempdouble;
         }
     }
 
@@ -521,8 +523,6 @@ double dist(double *point1, double *point2, int dimension) {
     return sum;
 }
 
-void is_symmetric(double **matrix)
-
 int mindist(int k, int dimension, double **centroids_list, double *point) {
 
     double min = dist(centroids_list[0], point, dimension);
@@ -546,6 +546,20 @@ void Init(int k, int dimension, int *count_array, double **sum_array) {
             sum_array[i][j] = 0;
         }
     }
+}
+
+int symetric(double ** Datapoints ,int dimension , int rows){
+    int i ,j ;
+    if (dimension != rows){
+        return 0;
+    }
+    else{
+        for(i = 0 ; i<rows ; i++)
+            for (j = 0 ; j<rows ; j++)
+                if(Datapoints[i][j] != Datapoints[j][i])
+                    return 0;
+    }
+    return 1;
 }
 
 void clustering(int k, int rows, int dimension, int *count_array,
@@ -671,8 +685,13 @@ int kmeans(char filename[], int Goal) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
     Getpoints(filename, rows, dimension, DataPoints);
-
+    
     if(Goal == 4){
+        
+        if(symetric(DataPoints ,dimension , rows) == 0){
+            printf("Invalid Input!");
+            return 0;
+        }
         jacobi = malloc(sizeof(double *) * rows);
         Vectors = malloc(sizeof(double *) * rows);
         for (i = 0; i < rows; i++) {
