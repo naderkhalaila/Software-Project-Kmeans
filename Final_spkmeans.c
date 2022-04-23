@@ -81,10 +81,10 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
     double **matrix1 , **Identity;
 
     Identity = malloc(sizeof(double *) * N);
-    check(Identity);
+    assert(Identity!=NULL);
     for (i = 0; i<N; i++) {
         Identity[i] = (double *) malloc(sizeof(double *) * N);
-        checkSub(Identity[i]);
+        assert(Identity[i]!=NULL);
     }
     for ( i = 0; i < N; i++) {
         for ( j = 0; j < N; j++){
