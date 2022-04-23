@@ -446,13 +446,11 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             eign[i] = eigenvalues[i][i];
         }
 
-        k = Eigengap(N, eign);
-        return k;
-        /*
+        k = Eigengap(N, eign);  
         for (i = 0; i < N; i++) {
             t[i] = (double *) malloc(sizeof(double *) * k);
             assert(t!=NULL);
-        }*/
+        }
     }
 
     index =  malloc(sizeof(int *) * N);
