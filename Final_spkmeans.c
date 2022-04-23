@@ -306,6 +306,8 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
             tempint = (int)tempdouble;
             tempdouble= ((double)tempint) * 10000 ;
             Vectors[i][j] = tempdouble;
+            if(tempdouble == -0.000)
+                Vectors[i][j] = absDouble(Vectors[i][j]); 
         }
     }
 
@@ -685,9 +687,9 @@ int kmeans(char filename[], int Goal) {
         DataPoints[i] = (double *) malloc((dimension) * sizeof(double));
     }
     Getpoints(filename, rows, dimension, DataPoints);
-    
+
     if(Goal == 4){
-        
+
         if(symetric(DataPoints ,dimension , rows) == 0){
             printf("Invalid Input!");
             return 0;
