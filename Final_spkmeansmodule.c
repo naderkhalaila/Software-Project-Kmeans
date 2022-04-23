@@ -177,7 +177,7 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 return array;
             }
         }
-        if (Goal == 4) {
+        if (Goal == 5) {
             jacobi = malloc(sizeof(double *) * rows);
             Vectors = malloc(sizeof(double *) * rows);
             for (i = 0; i<rows; i++) {
@@ -280,8 +280,11 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
                 DiagonalDegreeMatrix[i] = (double *) malloc(sizeof(double *) * rows);
             }
             TheDiagonalDegreeMatrix(rows, DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
+            
             if(Temp == Goal){
-
+                for (i = 0 ; i < rows ; i++){
+                    DiagonalDegreeMatrix[i][i] = 1/pow(DiagonalDegreeMatrix[i][i],2);
+                }
                 array = PyList_New(rows);
                 if (!array){
                     return NULL;
