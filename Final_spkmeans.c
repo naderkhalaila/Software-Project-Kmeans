@@ -217,7 +217,7 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     int iter = 0;
     int i, j , tempint;
 
-    double **matrixP, **TmatrixP, **A, **A_tag, **temp;
+    double **matrixP, **TmatrixP, **A, **A_tag, **temp , **V;;
 
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
@@ -273,8 +273,6 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     }
 
     while (conv > eps && iter < Max_Iter) {
-
-        double **V;
         V = malloc(sizeof(double *) * N);
         assert(V!=NULL);
         for (i = 0; i < N; i++) {
@@ -642,6 +640,7 @@ void Sizefile(char *filename, int *dimension, int *rows) {
     fclose(f);
     *dimension = tmp_dimension;
     *rows = tmp_rows;
+    free(f);
 }
 
 void Getpoints(char filename[] , int rows , int dimension , double **DataPoints){
@@ -684,7 +683,7 @@ void Getpoints(char filename[] , int rows , int dimension , double **DataPoints)
         }
     }
     fclose(file);
-
+    free(file);
 }
 
 int kmeans(char filename[], int Goal) {
@@ -746,10 +745,12 @@ int kmeans(char filename[], int Goal) {
             free(jacobi[i]);
             free(Vectors[i]);
             free(matrix[i]);
+            free(DataPoints[i]);
         }
         free(matrix[rows]);
         free(matrix);
         free(jacobi);
+        free(DataPoints);
         free(Vectors);
 
         return 1;
