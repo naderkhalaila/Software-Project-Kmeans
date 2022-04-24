@@ -698,10 +698,10 @@ int kmeans(char filename[], int Goal) {
 
     if(Goal == 4){
 
-        /*if(symetric(DataPoints ,dimension , rows) == 0){
+        if(symetric(DataPoints ,dimension , rows) == 0){
             printf("Invalid Input!");
             return 0;
-        }*/
+        }
         jacobi = malloc(sizeof(double *) * rows);
         Vectors = malloc(sizeof(double *) * rows);
         assert(jacobi!=NULL);
