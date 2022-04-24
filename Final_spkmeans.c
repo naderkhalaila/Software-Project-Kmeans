@@ -329,7 +329,7 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
             matrix[i][j] = A_tag[i][j];
         }
     }
-    /*
+
     for (i = 0; i < N; i++) {
         free(matrixP[i]);
         free(A[i]);
@@ -342,7 +342,7 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     free(A);
     free(temp);
     free(A_tag);
-    free(TmatrixP);*/
+    free(TmatrixP);
 }
 
 void insertionSort(int n, double * arr)
@@ -405,7 +405,7 @@ int Eigengap(int N ,double *eigenvalues){
 }
 
 int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoints ,  double** t){
-    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors  ,**sortedL,** eigenvalues , **U;
+    double ** WeightedAdjacencyMatrix ,**DiagonalDegreeMatrix , **NormalizedGraphLaplacian , **eigenvectors ,** eigenvalues , **U;
     double *eign;
     int i , j ,  k;
     double sum;
@@ -427,8 +427,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         NormalizedGraphLaplacian[i] = (double *)malloc(sizeof(double *) * N);
         eigenvectors[i] = (double *)malloc(sizeof(double *) * N);
         eigenvalues[i] = (double *)malloc(sizeof(double *) * N);
-        DiagonalDegreeMatrix[i] = (double *) malloc((N) * sizeof(double));
-        WeightedAdjacencyMatrix[i] = (double *) malloc((N) * sizeof(double));
+        DiagonalDegreeMatrix[i] = (double *) malloc((N) * sizeof(double*));
+        WeightedAdjacencyMatrix[i] = (double *) malloc((N) * sizeof(double*));
         assert(NormalizedGraphLaplacian[i]!=NULL);
         assert(eigenvectors[i]!=NULL);
         assert(eigenvalues[i]!=NULL);
@@ -439,7 +439,6 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     TheWeightedAdjacencyMatrix(N, dimension , WeightedAdjacencyMatrix , DataPoints);
     TheDiagonalDegreeMatrix(N , DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
     TheNormalizedGraphLaplacian(N , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix );
-
     Jacobi(N , eigenvalues , eigenvectors , NormalizedGraphLaplacian);
 
     if(K != 0){
@@ -450,14 +449,12 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         for (i = 0; i < N; i++) {
             eign[i] = eigenvalues[i][i];
         }
-
         k = Eigengap(N, eign);
+    }
 
-
-        for (i = 0; i < N; i++) {
-            t[i] = (double *) malloc(sizeof(double *) * k);
-            assert(t!=NULL);
-        }
+    for (i = 0; i < N; i++) {
+        t[i] = (double *) malloc(sizeof(double *) * k);
+        assert(t[i] != NULL);
     }
 
     index =  malloc(sizeof(int *) * N);
@@ -468,17 +465,6 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     }
 
     LnormSort(N, eign, index);
-    sortedL = malloc(sizeof(double *) * N);
-    assert(sortedL!=NULL);
-    for (i = 0; i<N; i++) {
-        sortedL[i] = malloc(sizeof(double *) * N);
-        assert(sortedL[i]!=NULL);
-    }
-    for (i = 0 ; i < N ; i++){
-        for (j = 0 ; j<N ; j++){
-            sortedL[i][j] = eigenvectors[i][index[j]] ;
-        }
-    }
 
     U = malloc(sizeof(double *) * N);
     assert(U!=NULL);
@@ -489,10 +475,9 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
 
     for (i = 0; i<N; i++) {
         for (j = 0 ; j<k ; j++){
-            U[i][j] = sortedL[i][j];
+            U[i][j] = eigenvectors[i][index[j]] ;
         }
     }
-
 
     for(i = 0 ; i<N ; i++) {
         sum = 0.0;
@@ -517,10 +502,8 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         free(DiagonalDegreeMatrix[i]);
         free(WeightedAdjacencyMatrix[i]);
         free(U[i]);
-        free(sortedL[i]);
     }
-    
-    free(sortedL);
+
     free(index);
     free(eigenvalues);
     free(eigenvectors);
@@ -715,10 +698,10 @@ int kmeans(char filename[], int Goal) {
 
     if(Goal == 4){
 
-        if(symetric(DataPoints ,dimension , rows) == 0){
+        /*if(symetric(DataPoints ,dimension , rows) == 0){
             printf("Invalid Input!");
             return 0;
-        }
+        }*/
         jacobi = malloc(sizeof(double *) * rows);
         Vectors = malloc(sizeof(double *) * rows);
         assert(jacobi!=NULL);
