@@ -13,7 +13,7 @@ void print(double **matrix, int rows, int col) {
     int j;
     for(i=0;i<rows;i++){
         for ( j = 0; j < col; j++) {
-            printf("%f",matrix[i][j]);
+            printf("%.4f",matrix[i][j]);
             if(j<col-1){
                 printf(",");
             }
@@ -128,12 +128,12 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     max = absDouble(Amatrix[0][1]);
     ii =0;
     jj =1;
-    printf("Amatrix:\n");
-    print(Amatrix,N,N);
-    printf("\n\n");
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            if(i!=j && absDouble(Amatrix[i][j])>max){
+            if(i!=j && absDouble(Amatrix[i][j])==max){
+                continue;
+            }
+            if(i!=j && absDouble(Amatrix[i][j])>(max+0.00001)){
                 max= absDouble(Amatrix[i][j]);
                 ii = i;
                 jj = j;
@@ -166,8 +166,6 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
             }
         }
     }
-    printf("ii:%d,jj:%d\n",ii,jj);
-
     matrix[ii][ii] = c;
     matrix[jj][jj] = c;
 
@@ -236,14 +234,6 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
 
     CreatePmatrix(N, matrixP, Lmatrix);
     Ptrans(N, TmatrixP, matrixP);
-
-    printf("matrixP:\n");
-    print(matrixP,N,N);
-    printf("\n\n");
-
-    printf("TmatrixP:\n");
-    print(TmatrixP,N,N);
-    printf("\n\n");
 
 
 
@@ -339,10 +329,7 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
             matrix[i][j] = A_tag[i][j];
         }
     }
-
-    print(matrix,N,N);
-    printf("\n");
-
+    /*
     for (i = 0; i < N; i++) {
         free(matrixP[i]);
         free(A[i]);
@@ -355,7 +342,7 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     free(A);
     free(temp);
     free(A_tag);
-    free(TmatrixP);
+    free(TmatrixP);*/
 }
 
 void insertionSort(int n, double * arr)
@@ -408,7 +395,7 @@ int Eigengap(int N ,double *eigenvalues){
     insertionSort(N, eigenvalues);
     for( i=1 ; i< floor(N/2) ; i++){
         arr[i] = fabs(eigenvalues[i] - eigenvalues[i+1]);
-        if(arr[i]>=max){
+        if(arr[i]>max){
             max=arr[i];
             k=i;
         }
@@ -532,6 +519,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
         free(U[i]);
         free(sortedL[i]);
     }
+    
     free(sortedL);
     free(index);
     free(eigenvalues);
