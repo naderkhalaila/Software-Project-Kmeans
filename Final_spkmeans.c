@@ -13,7 +13,7 @@ void print(double **matrix, int rows, int col) {
     int j;
     for(i=0;i<rows;i++){
         for ( j = 0; j < col; j++) {
-            printf("%.4f",matrix[i][j]);
+            printf("%f",matrix[i][j]);
             if(j<col-1){
                 printf(",");
             }
@@ -128,6 +128,9 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
     max = absDouble(Amatrix[0][1]);
     ii =0;
     jj =1;
+    printf("Amatrix:\n");
+    print(Amatrix,N,N);
+    printf("\n\n");
     for ( i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             if(i!=j && absDouble(Amatrix[i][j])>max){
@@ -163,6 +166,7 @@ void CreatePmatrix(int N , double **matrix, double **Amatrix) {
             }
         }
     }
+    printf("ii:%d,jj:%d\n",ii,jj);
 
     matrix[ii][ii] = c;
     matrix[jj][jj] = c;
@@ -218,7 +222,6 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
     int i, j;
 
     double **matrixP, **TmatrixP, **A, **A_tag, **temp;
-
     matrixP = malloc(sizeof(double *) * N);
     TmatrixP = malloc(sizeof(double *) * N);
     assert(matrixP!=NULL);
@@ -230,8 +233,19 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
         assert(TmatrixP[i]!=NULL);
     }
 
+
     CreatePmatrix(N, matrixP, Lmatrix);
     Ptrans(N, TmatrixP, matrixP);
+
+    printf("matrixP:\n");
+    print(matrixP,N,N);
+    printf("\n\n");
+
+    printf("TmatrixP:\n");
+    print(TmatrixP,N,N);
+    printf("\n\n");
+
+
 
     A = malloc(sizeof(double *) * N);
     A_tag = malloc(sizeof(double *) * N);
@@ -325,6 +339,9 @@ void Jacobi(int N, double **matrix , double **Vectors ,double **Lmatrix) {
             matrix[i][j] = A_tag[i][j];
         }
     }
+
+    print(matrix,N,N);
+    printf("\n");
 
     for (i = 0; i < N; i++) {
         free(matrixP[i]);
@@ -435,6 +452,7 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
     TheWeightedAdjacencyMatrix(N, dimension , WeightedAdjacencyMatrix , DataPoints);
     TheDiagonalDegreeMatrix(N , DiagonalDegreeMatrix , WeightedAdjacencyMatrix);
     TheNormalizedGraphLaplacian(N , NormalizedGraphLaplacian ,DiagonalDegreeMatrix , WeightedAdjacencyMatrix );
+
     Jacobi(N , eigenvalues , eigenvectors , NormalizedGraphLaplacian);
 
     if(K != 0){
@@ -446,7 +464,9 @@ int NormalizedSpectralClustering(int N ,int K , int dimension , double**DataPoin
             eign[i] = eigenvalues[i][i];
         }
 
-        k = Eigengap(N, eign);  
+        k = Eigengap(N, eign);
+
+
         for (i = 0; i < N; i++) {
             t[i] = (double *) malloc(sizeof(double *) * k);
             assert(t!=NULL);
