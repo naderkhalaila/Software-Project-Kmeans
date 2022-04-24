@@ -102,13 +102,8 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
         if (Goal == 1) {
             t = malloc(sizeof(double *) * rows);
             assert(t != NULL);
-            if (k != 0) {
-                for (i = 0; i < rows; i++) {
-                    t[i] = (double *) malloc(sizeof(double *) * k);
-                    assert(t[i] != NULL);
-                }
-            }
-            NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
+
+            k = NormalizedSpectralClustering(rows, k, dimension, DataPoints, t);
 
             array = PyList_New(rows);
             if (!array){
@@ -134,10 +129,13 @@ static PyObject *pseudo_main(PyObject* Py_data, PyObject* Py_centroids, int num_
             }
             free(DataPoints);
             free(t);
-
             return array;
         }
         if (Goal == 5) {
+            if(symetric(DataPoints , dimension , rows) == 0){
+                printf("Invalid Input!");
+                return 0;
+            }
             jacobi = malloc(sizeof(double *) * rows);
             assert(jacobi!=NULL);
             Vectors = malloc(sizeof(double *) * rows);
