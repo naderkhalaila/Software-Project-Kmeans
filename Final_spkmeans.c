@@ -121,58 +121,39 @@ void TheNormalizedGraphLaplacian (int N , double **matrix ,double **DiagonalDegr
     free(Identity);
 }
 
-void CreatePmatrix(int N , double **matrix, double **Amatrix) {
-    double max ;
-    int i,j, ii , jj ,sign;
-    double tita, s, c, t;
-    max = absDouble(Amatrix[0][1]);
-    ii =0;
-    jj =1;
-    printf("Amatrix:\n");
-    print(Amatrix,N,N);
-    printf("\n\n");
-    for ( i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            if(i!=j && absDouble(Amatrix[i][j])>max){
-                max= absDouble(Amatrix[i][j]);
-                ii = i;
-                jj = j;
-
+void CreatePmatrix(int n , double **P, double **A) {
+    int i, j, sign_theta;
+    int max_row, max_col;
+    double max, c, theta, t, s;
+    max = A[0][1];
+    max_row=0;
+    max_col=1;
+    for(i=0;i<n;i++) {
+        for (j = 0; j < n; j++) {
+            if (fabs(A[i][j]) > fabs(max) && i != j) {
+                P[i][j] = 0;
+                max = A[i][j];
+                max_row = i;
+                max_col = j;
+            }
+            if (i == j) {
+                P[i][j] = 1;
             }
         }
     }
-    if(Amatrix[ii][jj]< 0){
-        max = -max;
-    }
-    tita = (Amatrix[jj][jj] - Amatrix[ii][ii])/(2*max);
-    if(tita>=0){
-        sign = 1;
-    }else{
-        sign = -1;
-    }
+    theta = (A[max_col][max_col]-A[max_row][max_row])/(2*A[max_row][max_col]);
+    if(theta>=0) sign_theta=1;
+    else sign_theta=-1;
 
-
-    t = (sign)/((sign*(tita)) + (sqrt(pow(tita,2) +1)));
-    c = 1/sqrt(pow(t,2) +1);
+    t = sign_theta/ (fabs(theta)+ sqrt(pow(theta,2)+1));
+    c = 1/sqrt(pow(t,2)+1);
     s = t*c;
 
-    for ( i = 0; i < N; i++) {
-        for ( j = 0; j < N; j++){
-            if(i==j){
-                matrix[i][j] = 1;
-            }
-            else{
-                matrix[i][j]=0;
-            }
-        }
-    }
-    printf("ii:%d,jj:%d\n",ii,jj);
+    P[max_row][max_row] = c;
+    P[max_row][max_col]=s;
+    P[max_col][max_col]=c;
+    P[max_col][max_row]=-s;
 
-    matrix[ii][ii] = c;
-    matrix[jj][jj] = c;
-
-    matrix[ii][jj] = s;
-    matrix[jj][ii] = -s;
 }
 
 double absDouble(double d) {
