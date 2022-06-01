@@ -1,0 +1,513 @@
+import requests
+import lxml.html
+import rdflib
+from rdflib import URIRef
+import urllib
+from urllib import parse
+import sys
+
+get_url = "https://en.wikipedia.org/wiki/List_of_countries_by_population_(United_Nations)"
+prefix = "https://en.wikipedia.org"
+ontology_prefix = "https://example.org/"
+graph = rdflib.Graph()
+visited = set()
+country_dict = dict()
+citizen_dict = dict()
+month_dict = dict()
+question1 = False
+president = True
+government = False
+area = False
+
+def get_date(b_response, name):
+    born_date = URIRef(f"{ontology_prefix}{'Born_date'}")
+    bol = True
+
+    info = b_response.xpath('//table[contains(@class, "infobox")]/tbody/tr[th//text()="Born"]//span[@class="bday"]//text()')
+    dic = {'Évariste Ndayishimiye': '1968', 'Osman Hussein': '1951', 'Mustafa Al-Kadhimi': '1967' , 'Mohamed Hussein Roble': '1968-02', 'Assimi Goïta' : '1983'}
+    if name in dic.keys():
+        date = dic[name]
+        bol = False
+    if len(info) == 0:
+        date = 'none'
+        bol = False
+        return
+    if bol:
+        date = from_wiki_to_date(info[0])
+    graph_date = URIRef(f"{ontology_prefix}{date}")
+    new_name = name.replace(" ", "_")
+    name_rdf = URIRef(f"{ontology_prefix}{new_name}")
+    graph.add((graph_date, born_date, name_rdf))
+
+
+def from_wiki_to_date(date):
+    date_lst = date.split(" ")
+    if len(date_lst) == 1:
+        return date_lst[0]
+    if len(date_lst[0]) == 4:
+        return date_lst[0]
+    if date_lst[0] in month_dict.keys():
+        month = month_dict[date_lst[0]]
+        numeric_filter = filter(str.isdigit, date_lst[1])
+        numeric_string = "".join(numeric_filter)
+        day= numeric_string
+    else:
+        if date_lst[1] in month_dict.keys():
+            month = month_dict[date_lst[1]]
+            numeric_filter = filter(str.isdigit, date_lst[0])
+            numeric_string = "".join(numeric_filter)
+            day = numeric_string
+        else:
+            numeric_filter = filter(str.isdigit, date_lst[1])
+            numeric_string = "".join(numeric_filter)
+            month = numeric_string
+            numeric_filter = filter(str.isdigit, date_lst[0])
+            numeric_string = "".join(numeric_filter)
+            day = numeric_string
+    if len(str(day)) == 1:
+        day = '0' + str(day)
+    if len(str(month)) == 1:
+        month = '0' + str(month)
+    year = date_lst[2]
+    return str(year) + "-" + str(month) + "-" + str(day)
+
+
+def init_month_dict():
+    month_dict["January"] = 1
+    month_dict["February"] = 2
+    month_dict["March"] = 3
+    month_dict["April"] = 4
+    month_dict["May"] = 5
+    month_dict["June"] = 6
+    month_dict["July"] = 7
+    month_dict["August"] = 8
+    month_dict["September"] = 9
+    month_dict["October"] = 10
+    month_dict["November"] = 11
+    month_dict["December"] = 12
+
+
+unwanted_data = ["\n", " ", "by ", '"', ", ", "(", ")", ": "]
+
+
+def get_location(b_response, name):
+    born_in = URIRef(f"{ontology_prefix}{'Born_in'}")
+    bol = True
+    if name == 'Myint Swe':
+        location = 'none'
+        bol = False
+    info = b_response.xpath("//table[contains(@class,'infobox')]/tbody/tr[th//text()='Born']/td//text()")
+    if len(info) != 0 and bol == True:
+        location = info[-1]
+        if "Yugoslavia" in info[-1]:
+            location = info[-3]
+        location = clean(location)
+        if location is None:
+            location = info[-2]
+            location = clean(location)
+        location = clean_rev(location)
+    else:
+        return
+    if "Soviet Union" in location:
+        location = "Soviet Union"
+    if "now " in location:
+        location = location[4:]
+    location = urllib.parse.unquote(location)
+    location = location.replace(" ", "_")
+    graph_loc = URIRef(f"{ontology_prefix}{location}")
+    new_name = name.replace(" ", "_")
+    name_rdf = URIRef(f"{ontology_prefix}{new_name}")
+    graph.add((graph_loc, born_in, name_rdf))
+
+
+def clean(location):
+    for i in range(len(location)):
+        if location[i].isalpha():
+            return location[i:]
+    return None
+
+
+def clean_rev(location):
+    location = location[::-1]
+    location = clean(location)
+    return location[::-1]
+
+
+def init_citizen():
+    names = list(citizen_dict.keys())
+    while len(names) != 0:
+        name = names[0]
+        response = requests.get(citizen_dict[name])
+        b_response = lxml.html.fromstring(response.content)
+        get_date(b_response, name)
+        get_location(b_response, name)
+        names = names[1:]
+
+def add_url(name, url, e_dict):
+    final_url = f"{prefix}{url}"
+    if final_url not in visited:
+        e_dict[name] = final_url
+        visited.add(final_url)
+
+
+def init_url_list():
+    # Make a request to the wikipedia web page, and return the status code
+    response = requests.get(get_url)
+
+    # Get the content of the response, in bytes. Basically, it refers to Binary Response content.
+    b_response = lxml.html.fromstring(response.content)
+
+    # Add all the countries' url to a dictionary
+    add_url("Channel Islands", "/wiki/Channel_Islands", country_dict)
+    add_url("Western Sahara", "/wiki/Western_Sahara", country_dict)
+    add_url("Afghanistan", "/wiki/Afghanistan", country_dict)
+    for line in b_response.xpath("/html/body/div[3]/div[3]/div[5]/div[1]/table/tbody//td[1]//span/a"):
+        country = line.attrib['href'].split("/")[-1].replace("_", " ")
+        if country[-1] == ')':
+            index = country.index('(')
+            country = country[:index - 1]
+        country = urllib.parse.unquote(country)
+        add_url(country, line.attrib['href'], country_dict)
+
+
+def get_capital(b_response, country):
+    new_name_of_country = country.replace(" ", "_")
+    country_rdf = URIRef(f"{ontology_prefix}{new_name_of_country}")
+    capital_of = URIRef(f"{ontology_prefix}{'capital_of'}")
+
+    info = b_response.xpath("//table[contains(@class, 'infobox')]/tbody//tr[contains(th/text(),'Capital')]//a")
+
+    if len(info) != 0 and info[0].text != "de jure" and "note" not in info[0].text:
+        capital = info[0].attrib['href'].split("/")
+        capital = capital[-1]
+        if capital[-1] == ')':
+            index = capital.index('(')
+            capital = capital[:index - 1]
+        if capital[-1] == ']':
+            index = capital.index('[')
+            capital = capital[:index - 1]
+        capital = urllib.parse.unquote(capital).replace(" ", "_")
+        capital = URIRef(f"{ontology_prefix}{capital}")
+        graph.add((capital, capital_of, country_rdf))
+
+
+def get_area(b_response, country):
+    area_of = URIRef(f"{ontology_prefix}{'area_of'}")
+    info = b_response.xpath("/html/body/div[3]/div[3]/div[5]/div[1]/table[contains(@class,'infobox')]//tr[contains("
+                            "th//text(),'Area')]/following-sibling::tr/td/text()")
+
+    if len(info) != 0:
+        area_info = info[0].split(" ")
+        tmp = ""
+        for x in area_info[0]:
+            if x.isdigit() or x == ',' or x == '-' or x == '.':
+                tmp += x
+        area_info = tmp
+        new_name = area_info.replace(" ", "_")
+        area = URIRef(f"{ontology_prefix}{new_name}")
+        new_name_of_country = country.replace(" ", "_")
+        country_rdf = URIRef(f"{ontology_prefix}{new_name_of_country}")
+        graph.add((area, area_of, country_rdf))
+
+
+def get_government(b_response, country):
+    government_of = URIRef(f"{ontology_prefix}{'government_in'}")
+    info = b_response.xpath(
+        "/html/body/div[3]/div[3]/div[5]/div[1]/table[contains(@class,'infobox')]//tr[contains(th//text(), "
+        "'Government')]/td/a")
+    if len(info)==0:
+        info = b_response.xpath("/html/body/div[3]/div[3]/div[5]/div[1]/table[contains(@class,'infobox')]//tr[contains(th//text(), "
+            "'Government')]/td/span/a")
+
+    if len(info) != 0:
+        gov = []
+        for item in info:
+            item = item.attrib['href'].split("/")[-1]
+            if item == 'Marxism%E2%80%93Leninism':
+                item = 'Marxism_Leninism'
+            if "#" in item:
+                item = item.split("#")
+                item = item[1]
+            if item == 'Ba%27athism':
+                item = 'Ba’athist'
+            gov.append(item.replace("_", "@"))
+        gov = sorted(gov, key=str.lower)
+        string = '_'.join([str(item) for item in gov])
+        new_name = URIRef(f"{ontology_prefix}{string}")
+        new_name_of_country = country.replace(" ", "_")
+        country_rdf = URIRef(f"{ontology_prefix}{new_name_of_country}")
+        graph.add((new_name, government_of, country_rdf))
+
+
+def get_president(b_response, country):
+    name = "president_of"
+    president_of = URIRef(f"{ontology_prefix}{name}")
+    info = b_response.xpath('//table[contains(@class, "infobox")]/tbody//tr[th//text()="President"]/td//a')
+    if len(info) != 0:
+        new_name = (info[0]).text.replace(" ", "_")
+        president = URIRef(f"{ontology_prefix}{new_name}")
+        add_url(info[0].text, info[0].attrib['href'], citizen_dict)
+        new_name_of_country = country.replace(" ", "_")
+        country_rdf = URIRef(f"{ontology_prefix}{new_name_of_country}")
+        graph.add((president, president_of, country_rdf))
+
+
+def get_prime_minister(b_response, country):
+    prime_minister = URIRef(f"{ontology_prefix}{'prime_minister_of'}")
+    info = b_response.xpath('//table[contains(@class, "infobox")]/tbody//tr[th//text()="Prime Minister"]/td/a')
+    if len(info) != 0:
+        new_name = (info[0]).text.replace(" ", "_")
+        primeminister = URIRef(f"{ontology_prefix}{new_name}")
+        add_url(info[0].text, info[0].attrib['href'], citizen_dict)
+        new_name = country.replace(" ", "_")
+        country_rdf = URIRef(f"{ontology_prefix}{new_name}")
+        graph.add((primeminister, prime_minister, country_rdf))
+
+def get_population(b_response, country):
+    population_of = URIRef(f"{ontology_prefix}{'population_of'}")
+    info = b_response.xpath('//table[contains(@class, "infobox")]/tbody//tr[th//text()="Population"]/td/text()')
+    if len(info) == 0:
+        info = b_response.xpath(
+            '//table[contains(@class, "infobox")]/tbody//tr[th//text()="Population"]/following-sibling::tr[1]/td/text()')
+
+    if country == "Russia":
+        info = b_response.xpath(
+            '//table[contains(@class, "infobox")]/tbody//tr[th//text()="Population"]/following-sibling::tr[1]/td//li['
+            '1]/text()')
+
+    if country == 'Dominican Republic' or country == 'Belarus' or country == 'Malta':
+        info = b_response.xpath(
+            '//table[contains(@class, "infobox")]/tbody//tr[th//text()="Population"]/following-sibling::tr['
+            '1]/td//span/text()')
+
+    if country == 'Eritrea':
+        info = b_response.xpath(
+            '//table[contains(@class, "infobox")]/tbody//tr[th//text()="Population"]/following-sibling::tr['
+            '1]/td/i/text()')
+    if len(info) != 0:
+        population = info[0].split("(")
+        population = population[0].strip().split(" ")
+        # Maldives and Eritrea need to check
+        Population = URIRef(f"{ontology_prefix}{str(population[0])}")
+        new_name = country.replace(" ", "_")
+        country_rdf = URIRef(f"{ontology_prefix}{new_name}")
+        graph.add((Population, population_of, country_rdf))
+
+
+
+def create_sparql_query(question_user):
+    # If the question is not general:
+    length = len(question_user)
+    relation = None
+    entity1 = None
+    entity2 = None
+    if question_user.find("How_many") == -1 and question_user.find("List_all") == -1 and question_user.find("_has_bigger_population") == -1:
+        # question Who is the <person> <country>
+        if question_user.find("Who_is") != -1:
+            # question Who is the president of <country>
+            if question_user.find("president_of") != -1:
+                entity1 = question_user[24:length-1]
+                relation = 'president_of'
+
+
+            # question Who is the prime minister of <country>
+            elif question_user.find("prime_minister") != -1:
+                entity1 = question_user[29:length-1]
+                relation = 'prime_minister_of'
+
+            # question Who is <entity>?
+            else:
+                entity1 = question_user[7:length-1]
+                q1 = "select ?c where { <https://example.org/" + entity1 + "> <https://example.org/prime_minister_of> ?c . }"
+                q2 = "select ?c where { <https://example.org/" + entity1 + "> <https://example.org/president_of> ?c . }"
+                x = graph.query(q1)
+                global question1
+                question1 = True
+                if len(list(x)) == 0:
+                    q = q2
+                else:
+                    q = q1
+                    global president
+                    president = False
+                return q
+
+        # question : What is <entity> <country?
+        if question_user.find("What_is") != -1:
+            # question What is population of <country>
+            if question_user.find("population_of") != -1:
+                entity1 = question_user[26:length-1]
+                relation = 'population_of'
+
+            # question What is the area of <country>
+            elif question_user.find("area_of") != -1:
+                global area
+                area = True
+                entity1 = question_user[20:length-1]
+                relation = 'area_of'
+
+            # question What is the form of government in <country>
+            elif question_user.find("government_in") != -1:
+                global government
+                government = True
+                entity1 = question_user[34:length-1]
+                relation = 'government_in'
+
+            # question Who is the capital of <country>
+            elif question_user.find("capital_of") != -1:
+                entity1 = question_user[23:length-1]
+                relation = 'capital_of'
+
+        # question : Where was the <entity> <country> born?
+        if question_user.find("Where_was") != -1:
+            # question Where was the president of <country> born?
+            if question_user.find("president_of") != -1:
+                tmp = (question_user[27:length-6])
+                relation = 'Born_in'
+                entity1 = 'president_of'
+                entity2 = tmp
+
+            # question Where was the prime minister of <country> born?
+            elif question_user.find("prime_minister") != -1:
+                tmp = (question_user[32:length-6])
+                relation = 'Born_in'
+                entity1 = 'prime_minister_of'
+                entity2 = tmp
+
+        # question : When was the <entity> <country> born?
+        if question_user.find("When_was") != -1:
+            # question When was the president of <country> born?
+            if question_user.find("president_of") != -1:
+                tmp = (question_user[26:length-6])
+                relation = 'Born_date'
+                entity1 = 'president_of'
+                entity2 = tmp
+
+            # question When was the prime minister of <country> born?
+            elif question_user.find("prime_minister") != -1:
+                tmp = (question_user[31:length-6])
+                relation = 'Born_date'
+                entity1 = 'prime_minister_of'
+                entity2 = tmp
+
+        if question_user.find("When_was") == -1 and question_user.find("Where_was") == -1:
+            return "select ?p where {?p <https://example.org/" + relation + "> <https://example.org/" + entity1 + "> .} "
+        else:
+            return "select ?b where { ?p <https://example.org/" + entity1 + "> <https://example.org/" + entity2 + "> . ?b <https://example.org/" + relation + "> ?p . }"
+
+    # question List all countries whose capital name contain the string <str>
+    elif question_user.find("List_all") != -1:
+        entity1 = question_user[58:]
+        return "select ?country where {?capital <https://example.org/capital_of> ?country . " f'FILTER(CONTAINS(lcase(str(?capital)), "{entity1}")) .' + "}"
+
+    elif question_user.find("How_many") != -1:
+        # question How many presidents were born in <country>?
+        if question_user.find("presidents") != -1:
+            entity1 = question_user[33:length-1]
+            return "select (COUNT(*) AS ?count) where {<https://example.org/" + entity1 + "> <https://example.org/Born_in> ?p . ?p <https://example.org/president_of> ?c .}"
+
+        # question How many <government_form1> are also <government_form2>?
+        if question_user.find("also") != -1:
+            tmp = question_user[9:length-1]
+            tmp = tmp.split("_are_also_")
+            entity1 = tmp[0].replace("_", "@")
+            entity2 = tmp[1].replace("_", "@")
+            return "select (COUNT(*) AS ?count)where{?gov <https://example.org/government_in> ?c . " f'FILTER(CONTAINS(str(?gov), "{entity1}")) .' f'FILTER(CONTAINS(str(?gov), "{entity2}")) .' + "}"
+
+    elif question_user.find('has_bigger_population') != -1:
+        tmp = (question_user.split("_has_"))[0].split("_or_")
+        entity1 = tmp[0]
+        entity2 = tmp[1]
+        print(entity1)
+        print(entity2)
+        q1 = "select ?p where {?p <https://example.org/population_of> <https://example.org/" + entity1 + "> .} "
+        q2 = "select ?p where {?p <https://example.org/population_of> <https://example.org/" + entity2 + "> .} "
+        return [q1, q2, entity1, entity2]
+
+    # If the input question do not match any of the above:
+    return "ERROR: illegal question format."
+
+
+def question():
+    graph.parse("ontology.nt", format="nt")
+    question_user = sys.argv[2]
+    question_user = question_user.replace(" ", "_")
+    sparql_query = create_sparql_query(question_user)
+    if question_user.find('has_bigger_population') == -1:
+        print(sparql_query)
+        query_list_result = list(graph.query(sparql_query))
+
+    if question1:
+        if president:
+            print("President of " + (query_list_result[0][0].split("/")[-1]).replace("_", " "))
+        else:
+            print("Prime Minister of " + (query_list_result[0][0].split("/")[-1]).replace("_", " "))
+        return
+    elif area:
+        if ontology_prefix in query_list_result[0][0]:
+            print((query_list_result[0][0].split("/")[-1]).replace("_", " ") + " km squared")
+        else:
+            print(query_list_result[0][0] + " km squared")
+    elif government:
+        lst = (query_list_result[0][0].split("/")[-1]).split("_")
+        print(", ".join(lst).replace("@", " "))
+        return
+    elif question_user.find('has_bigger_population') != -1:
+        population1 = list(graph.query(sparql_query[0]))
+        population2 = list(graph.query(sparql_query[1]))
+        if len(population1) == 0 or len(population2) == 0:
+            print("Unknown data")
+            return
+        population1 = (population1[0][0].split("/")[-1]).replace(",", "")
+        population2 = (population2[0][0].split("/")[-1]).replace(",", "")
+        if int(population1) > int(population2):
+            print(sparql_query[2].replace("_", " "))
+        else:
+            print(sparql_query[3].replace("_", " "))
+    else:
+        if len(query_list_result) == 1:
+            if ontology_prefix in query_list_result[0][0]:
+                print((query_list_result[0][0].split("/")[-1]).replace("_", " "))
+            else:
+                print(query_list_result[0][0])
+        else:
+            countries = []
+            for i in range(len(query_list_result)):
+                countries.append((query_list_result[i][0].split("/")[-1]).replace("_", " "))
+            countries.sort()
+            st = countries[0]
+            for i in range(1, len(countries)):
+                st += ", " + countries[i]
+            print(st)
+        return 0
+
+
+def create():
+    init_url_list()
+    init_month_dict()
+    keys = country_dict.keys()
+    for key in keys:
+        response = requests.get(country_dict[key])
+        b_response = lxml.html.fromstring(response.content)
+        get_capital(b_response, key)
+        get_area(b_response, key)
+        get_government(b_response, key)
+        get_population(b_response, key)
+        get_prime_minister(b_response, key)
+        get_president(b_response, key)
+
+    init_citizen()
+
+
+def main():
+    str = sys.argv[1]
+    if str == "create":
+        create()
+        graph.serialize("ontology.nt", format="nt", errors="ignore", encoding="utf-8")
+    elif str == "question":
+        question()
+    else:
+        print("unknown command, please check again")
+    return 0
+
+
+main()
